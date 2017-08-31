@@ -24,7 +24,7 @@ func check(e error) {
 	}
 }
 
-func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
+func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
 	kListModified := parsing.ListStripper(modified)
 	kListOriginal := parsing.ListStripper(original)
 	if len(kListModified) > 1 || len(kListOriginal) > 1 {
@@ -43,7 +43,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 		}
 		if proc {
 			for k := range original {
-				recursion(parsing.Keyvalue{k:original[k]},parsing.Keyvalue{k:modified[k]},path)
+				Recursion(parsing.Keyvalue{k:original[k]},parsing.Keyvalue{k:modified[k]},path)
 			}
 		}
 		return
@@ -63,7 +63,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 		if !(reflect.DeepEqual(valMod, valOrig)) {
 			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 				npath := append(path, k)
-				recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
+				Recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
 				return
 			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 				valOrig,_ := valOrig.([]interface{})
@@ -218,7 +218,7 @@ func main() {
 					fmt.Println("No differences!")
 					os.Exit(0)
 				} else {
-					recursion(json_original, json_modified, path)
+					Recursion(json_original, json_modified, path)
 				}
 
 				if c.String("output") == "human" {
