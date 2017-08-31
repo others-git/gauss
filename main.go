@@ -10,16 +10,13 @@ import (
 	"reflect"
 	"strconv"
 	"regexp"
+	"github.com/beard1ess/gauss/parsing"
 )
 
 var (
-	//ObjectDiff Keyslice
-	ObjectDiff = make(Keyslice)
-	FormattedDiff = make(Keyvalue)
+	ObjectDiff = make(parsing.Keyslice)
+	FormattedDiff = make(parsing.Keyvalue)
 )
-
-type Keyvalue map[string]interface{}
-type Keyslice map[string][]Keyvalue
 
 func check(e error) {
 	if e != nil {
@@ -27,64 +24,33 @@ func check(e error) {
 	}
 }
 
-func Remarshal(input interface{}) Keyvalue {
-	var back Keyvalue
-	out,_ := json.Marshal(input)
-	_ = json.Unmarshal([]byte(out), &back)
-	return back
-}
-
-func ListStripper(input Keyvalue) []string {
-	var r []string
-	for key := range input {
-		r = append(r, key)
-	}
-	return r
-}
-
-func IndexOf(inputList []string, inputKey string) int {
-	for i, v := range inputList {
-		if v == inputKey {
-			return i
-		}
-	}
-	return -1
-}
-
-
-
-func recursion(original Keyvalue, modified Keyvalue, path []string) {
-
-	kListModified := ListStripper(modified)
-	kListOriginal := ListStripper(original)
-
+func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
+	kListModified := parsing.ListStripper(modified)
+	kListOriginal := parsing.ListStripper(original)
 	if len(kListModified) > 1 || len(kListOriginal) > 1 {
 		proc := true
 		for k, v := range original {
-			if IndexOf(kListModified, k) == -1 {
-				ObjectDiff["Removed"] = append(ObjectDiff["Removed"],Keyvalue{"Path": path, "Key": k, "Value":v})
+			if parsing.IndexOf(kListModified, k) == -1 {
+				ObjectDiff["Removed"] = append(ObjectDiff["Removed"],parsing.Keyvalue{"Path": path, "Key": k, "Value":v})
 				proc = false
 			}
 		}
-
 		for k, v := range modified {
-			if IndexOf(kListOriginal, k) == -1 {
-				ObjectDiff["Added"] = append(ObjectDiff["Added"],Keyvalue{"Path": path, "Key": k, "Value":v})
+			if parsing.IndexOf(kListOriginal, k) == -1 {
+				ObjectDiff["Added"] = append(ObjectDiff["Added"],parsing.Keyvalue{"Path": path, "Key": k, "Value":v})
 				proc = false
 			}
 		}
 		if proc {
 			for k := range original {
-				recursion(Keyvalue{k:original[k]},Keyvalue{k:modified[k]},path)
+				recursion(parsing.Keyvalue{k:original[k]},parsing.Keyvalue{k:modified[k]},path)
 			}
 		}
 		return
 	}
 	for k := range original {
 		var valOrig, valMod interface{}
-
 		if reflect.TypeOf(original).Name() == "string" {
-
 			valOrig = original
 		} else {
 			valOrig = original[k]
@@ -94,13 +60,10 @@ func recursion(original Keyvalue, modified Keyvalue, path []string) {
 		} else {
 			valMod = modified[k]
 		}
-
 		if !(reflect.DeepEqual(valMod, valOrig)) {
-
 			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 				npath := append(path, k)
-				//recursion(valOrig.(Keyvalue), valMod.(Keyvalue), npath)
-				recursion(Remarshal(valOrig), Remarshal(valMod), npath)
+				recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
 				return
 			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 				valOrig,_ := valOrig.([]interface{})
@@ -113,14 +76,14 @@ func recursion(original Keyvalue, modified Keyvalue, path []string) {
 					for i := range valOrig {
 						if !(reflect.DeepEqual(valMod[i], valOrig[i])) {
 							npath := append(path, "{Index:"+strconv.Itoa(i)+"}")
-							ObjectDiff["Changed"] = append(ObjectDiff["Changed"],Keyvalue{"Path": npath,
+							ObjectDiff["Changed"] = append(ObjectDiff["Changed"],parsing.Keyvalue{"Path": npath,
 								"Key": k, "oldValue":valOrig[i],"newValue":valMod[i]})
 							return
 						}
 					}
 				}
 			} else {
-				ObjectDiff["Changed"] = append(ObjectDiff["Changed"],Keyvalue{"Path": path, "Key": k,
+				ObjectDiff["Changed"] = append(ObjectDiff["Changed"],parsing.Keyvalue{"Path": path, "Key": k,
 					"oldValue":valOrig,"newValue":valMod})
 				return
 			}
@@ -131,11 +94,10 @@ func recursion(original Keyvalue, modified Keyvalue, path []string) {
 }
 
 
-func format(input Keyslice) Keyvalue {
-	var return_value Keyvalue
+func format(input parsing.Keyslice) parsing.Keyvalue {
+	var return_value parsing.Keyvalue
 
-
-
+	FormattedDiff = nil
 
 	for i := range input["Changed"] {
 		path_builder(input["Changed"][i]["Path"].([]string))
@@ -152,8 +114,8 @@ func format(input Keyslice) Keyvalue {
 	return return_value
 }
 
-func path_builder(path []string)  Keyvalue{
-	var object Keyvalue
+func path_builder(path []string)  parsing.Keyvalue{
+	var object parsing.Keyvalue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")
 	//path_length := len(path)
@@ -222,7 +184,7 @@ func main() {
 				*/
 			},
 			Action:  func(c *cli.Context) error {
-				var json_original, json_modified Keyvalue
+				var json_original, json_modified parsing.Keyvalue
 				var path []string
 				if original_obj == "" {
 					fmt.Print("ORIGIN is required!\n\n")
