@@ -130,6 +130,7 @@ func path_builder(path []string)  parsing.Keyvalue{
 
 
 	fmt.Println(path)
+	fmt.Println(path)
 	return object
 }
 
