@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	ObjectDiff = make(parsing.Keyslice)
-	FormattedDiff = make(parsing.Keyvalue)
+	FormattedDiff parsing.Keyslice
+
 )
+var ObjectDiff = parsing.ConsumableDifference{}
 
 func check(e error) {
 	if e != nil {
@@ -24,20 +25,22 @@ func check(e error) {
 	}
 }
 
-func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
+func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path parsing.Pathspec) {
 	kListModified := parsing.ListStripper(modified)
 	kListOriginal := parsing.ListStripper(original)
 	if len(kListModified) > 1 || len(kListOriginal) > 1 {
 		proc := true
 		for k, v := range original {
 			if parsing.IndexOf(kListModified, k) == -1 {
-				ObjectDiff["Removed"] = append(ObjectDiff["Removed"],parsing.Keyvalue{"Path": path, "Key": k, "Value":v})
+				removed := parsing.RemovedDifference{Path: path, Key: k, Value: v}
+				ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
 				proc = false
 			}
 		}
 		for k, v := range modified {
 			if parsing.IndexOf(kListOriginal, k) == -1 {
-				ObjectDiff["Added"] = append(ObjectDiff["Added"],parsing.Keyvalue{"Path": path, "Key": k, "Value":v})
+				added := parsing.AddedDifference{Path: path, Key: k, Value: v}
+				ObjectDiff.Added = append(ObjectDiff.Added, added)
 				proc = false
 			}
 		}
@@ -49,6 +52,7 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 		return
 	}
 	for k := range original {
+		var npath parsing.Pathspec
 		var valOrig, valMod interface{}
 		if reflect.TypeOf(original).Name() == "string" {
 			valOrig = original
@@ -62,7 +66,7 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 		}
 		if !(reflect.DeepEqual(valMod, valOrig)) {
 			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
-				npath := append(path, k)
+				npath = append(path, k)
 				Recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
 				return
 			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
@@ -75,16 +79,18 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 				} else {
 					for i := range valOrig {
 						if !(reflect.DeepEqual(valMod[i], valOrig[i])) {
-							npath := append(path, "{Index:"+strconv.Itoa(i)+"}")
-							ObjectDiff["Changed"] = append(ObjectDiff["Changed"],parsing.Keyvalue{"Path": npath,
-								"Key": k, "oldValue":valOrig[i],"newValue":valMod[i]})
+							npath = append(path, "{Index:"+strconv.Itoa(i)+"}")
+							changed := parsing.ChangedDifference{Path: npath, Key: k,
+								OldValue: valOrig[i], NewValue: valMod[i]}
+							ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 							return
 						}
 					}
 				}
 			} else {
-				ObjectDiff["Changed"] = append(ObjectDiff["Changed"],parsing.Keyvalue{"Path": path, "Key": k,
-					"oldValue":valOrig,"newValue":valMod})
+				changed := parsing.ChangedDifference{Path: path, Key: k,
+					OldValue: valOrig, NewValue: valMod}
+				ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 				return
 			}
 		}
@@ -94,11 +100,11 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 }
 
 
-func format(input parsing.Keyslice) parsing.Keyvalue {
+func format(input parsing.ConsumableDifference) parsing.Keyvalue {
 	var return_value parsing.Keyvalue
 
 	FormattedDiff = nil
-
+	/*
 	for i := range input["Changed"] {
 		path_builder(input["Changed"][i]["Path"].([]string))
 	}
@@ -109,6 +115,7 @@ func format(input parsing.Keyslice) parsing.Keyvalue {
 		path_builder(input["Removed"][i]["Path"].([]string))
 
 	}
+	*/
 
 
 	return return_value
@@ -172,7 +179,7 @@ func main() {
 				cli.StringFlag{
 					Name: "output",
 					Usage: "Output types available: human, machine",
-					Value: "human",
+					Value: "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
 				/*

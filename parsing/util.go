@@ -7,6 +7,31 @@ import (
 type Keyvalue map[string]interface{}
 type Keyslice map[string][]Keyvalue
 
+// TODO: Update Pathspec to support 'index' for slices.
+type Pathspec []string
+
+type RemovedDifference struct{
+	Key string
+	Path Pathspec
+	Value interface{}
+}
+type AddedDifference struct{
+	Key string
+	Path Pathspec
+	Value interface{}
+}
+type ChangedDifference struct{
+	Key string
+	Path Pathspec
+	NewValue interface{}
+	OldValue interface{}
+}
+
+type ConsumableDifference struct{
+	Changed []ChangedDifference
+	Added []AddedDifference
+	Removed []RemovedDifference
+}
 
 func Remarshal(input interface{}) Keyvalue {
 	var back Keyvalue
