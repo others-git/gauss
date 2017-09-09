@@ -171,7 +171,7 @@
       "i2.2xlarge"  : { "Arch" : "NATHVM64"  },
       "i2.4xlarge"  : { "Arch" : "NATHVM64"  },
       "i2.8xlarge"  : { "Arch" : "NATHVM64"  },
-      "d2.xlarge"   : { "Arch" : "NATHVM64-diff"  },
+      "d2.xlarge"   : { "Arch" : "NATHVM64"  },
       "d2.2xlarge"  : { "Arch" : "NATHVM64"  },
       "d2.4xlarge"  : { "Arch" : "NATHVM64"  },
       "d2.8xlarge"  : { "Arch" : "NATHVM64"  },

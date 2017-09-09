@@ -8,7 +8,17 @@ type Keyvalue map[string]interface{}
 type Keyslice map[string][]Keyvalue
 
 // TODO: Update Pathspec to support 'index' for slices.
+/*
+type Pathspec struct{
+	Name string
+	Index int
+}
+*/
 type Pathspec []string
+func (ps *Pathspec) Indexer() {
+
+}
+
 
 type RemovedDifference struct{
 	Key string
@@ -28,9 +38,9 @@ type ChangedDifference struct{
 }
 
 type ConsumableDifference struct{
-	Changed []ChangedDifference
-	Added []AddedDifference
-	Removed []RemovedDifference
+	Changed []ChangedDifference `json:",omitempty"`
+	Added []AddedDifference `json:",omitempty"`
+	Removed []RemovedDifference `json:",omitempty"`
 }
 
 func Remarshal(input interface{}) Keyvalue {

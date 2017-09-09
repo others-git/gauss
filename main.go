@@ -54,16 +54,17 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path parsin
 	for k := range original {
 		var npath parsing.Pathspec
 		var valOrig, valMod interface{}
-		if reflect.TypeOf(original).Name() == "string" {
+		if reflect.TypeOf(original).Kind() == reflect.String {
 			valOrig = original
 		} else {
 			valOrig = original[k]
 		}
-		if reflect.TypeOf(modified).Name() == "string" {
+		if reflect.TypeOf(modified).Kind() == reflect.String {
 			valMod = modified
 		} else {
 			valMod = modified[k]
 		}
+
 		if !(reflect.DeepEqual(valMod, valOrig)) {
 			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 				npath = append(path, k)
@@ -73,13 +74,16 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path parsin
 				valOrig,_ := valOrig.([]interface{})
 				valMod,_ := valMod.([]interface{})
 				if len(valOrig) != len(valMod) {
-					// do things
-					fmt.Println("Unexpected spot, array lengths are different for value, not implemented lol")
+					// TODO array length differences
+					fmt.Println("I cannot handle array length differences yet, sorry not sorry; kind of sorry.")
 					os.Exit(1)
 				} else {
 					for i := range valOrig {
 						if !(reflect.DeepEqual(valMod[i], valOrig[i])) {
 							npath = append(path, "{Index:"+strconv.Itoa(i)+"}")
+							
+							npath = path[1]
+							//, "{Index:"+strconv.Itoa(i)+"}")
 							changed := parsing.ChangedDifference{Path: npath, Key: k,
 								OldValue: valOrig[i], NewValue: valMod[i]}
 							ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
@@ -117,7 +121,6 @@ func format(input parsing.ConsumableDifference) parsing.Keyvalue {
 	}
 	*/
 
-
 	return return_value
 }
 
@@ -134,7 +137,6 @@ func path_builder(path []string)  parsing.Keyvalue{
 
 		}
 	}
-
 
 	fmt.Println(path)
 	fmt.Println(path)
