@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"regexp"
 	"github.com/beard1ess/gauss/parsing"
+
 )
 
 var (
@@ -81,8 +82,11 @@ func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path parsin
 					for i := range valOrig {
 						if !(reflect.DeepEqual(valMod[i], valOrig[i])) {
 							npath = append(path, "{Index:"+strconv.Itoa(i)+"}")
-							
-							npath = path[1]
+
+
+							fmt.Println(path[len(path)-1])
+							os.Exit(0)
+							//npath = path[1]
 							//, "{Index:"+strconv.Itoa(i)+"}")
 							changed := parsing.ChangedDifference{Path: npath, Key: k,
 								OldValue: valOrig[i], NewValue: valMod[i]}
@@ -147,9 +151,9 @@ func main() {
 	var patch, object, original_obj, modified_obj string
 
 	app := cli.NewApp()
-	app.Name = "JsonDiffer"
+	app.Name = "Gauss"
 	app.Version = "0.1"
-	app.Usage = "Used to get an object-based difference between two json objects."
+	app.Usage = "Objected-based difference and patching tool."
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

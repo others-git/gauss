@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"encoding/json"
+	"github.com/jmespath/go-jmespath"
 )
 
 type Keyvalue map[string]interface{}
