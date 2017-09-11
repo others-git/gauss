@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"log"
 	"reflect"
-	"strconv"
 	"regexp"
 	"github.com/beard1ess/gauss/parsing"
+	"github.com/beard1ess/gauss/operator"
 
 )
 
@@ -18,7 +18,6 @@ var (
 	FormattedDiff parsing.Keyslice
 
 )
-var ObjectDiff = parsing.ConsumableDifference{}
 
 func check(e error) {
 	if e != nil {
@@ -26,86 +25,6 @@ func check(e error) {
 	}
 }
 
-func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path parsing.Pathspec) {
-	kListModified := parsing.ListStripper(modified)
-	kListOriginal := parsing.ListStripper(original)
-	if len(kListModified) > 1 || len(kListOriginal) > 1 {
-		proc := true
-		for k, v := range original {
-			if parsing.IndexOf(kListModified, k) == -1 {
-				removed := parsing.RemovedDifference{Path: path, Key: k, Value: v}
-				ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
-				proc = false
-			}
-		}
-		for k, v := range modified {
-			if parsing.IndexOf(kListOriginal, k) == -1 {
-				added := parsing.AddedDifference{Path: path, Key: k, Value: v}
-				ObjectDiff.Added = append(ObjectDiff.Added, added)
-				proc = false
-			}
-		}
-		if proc {
-			for k := range original {
-				Recursion(parsing.Keyvalue{k:original[k]},parsing.Keyvalue{k:modified[k]},path)
-			}
-		}
-		return
-	}
-	for k := range original {
-		var npath parsing.Pathspec
-		var valOrig, valMod interface{}
-		if reflect.TypeOf(original).Kind() == reflect.String {
-			valOrig = original
-		} else {
-			valOrig = original[k]
-		}
-		if reflect.TypeOf(modified).Kind() == reflect.String {
-			valMod = modified
-		} else {
-			valMod = modified[k]
-		}
-
-		if !(reflect.DeepEqual(valMod, valOrig)) {
-			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
-				npath = append(path, k)
-				Recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
-				return
-			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
-				valOrig,_ := valOrig.([]interface{})
-				valMod,_ := valMod.([]interface{})
-				if len(valOrig) != len(valMod) {
-					// TODO array length differences
-					fmt.Println("I cannot handle array length differences yet, sorry not sorry; kind of sorry.")
-					os.Exit(1)
-				} else {
-					for i := range valOrig {
-						if !(reflect.DeepEqual(valMod[i], valOrig[i])) {
-							npath = append(path, "{Index:"+strconv.Itoa(i)+"}")
-
-
-							fmt.Println(path[len(path)-1])
-							os.Exit(0)
-							//npath = path[1]
-							//, "{Index:"+strconv.Itoa(i)+"}")
-							changed := parsing.ChangedDifference{Path: npath, Key: k,
-								OldValue: valOrig[i], NewValue: valMod[i]}
-							ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
-							return
-						}
-					}
-				}
-			} else {
-				changed := parsing.ChangedDifference{Path: path, Key: k,
-					OldValue: valOrig, NewValue: valMod}
-				ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
-				return
-			}
-		}
-		return
-	}
-	return
-}
 
 
 func format(input parsing.ConsumableDifference) parsing.Keyvalue {
@@ -200,6 +119,7 @@ func main() {
 			Action:  func(c *cli.Context) error {
 				var json_original, json_modified parsing.Keyvalue
 				var path []string
+				var ObjectDiff parsing.ConsumableDifference
 				if original_obj == "" {
 					fmt.Print("ORIGIN is required!\n\n")
 					cli.ShowCommandHelp(c, "diff")
@@ -232,7 +152,7 @@ func main() {
 					fmt.Println("No differences!")
 					os.Exit(0)
 				} else {
-					Recursion(json_original, json_modified, path)
+					ObjectDiff = operator.Recursion(json_original, json_modified, path)
 				}
 
 				if c.String("output") == "human" {
