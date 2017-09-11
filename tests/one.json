@@ -207,7 +207,7 @@
       "Properties": {
         "Subscription":
         [
-          { "Endpoint": { "Ref": "OperatorEMail-diff" }, "Protocol": "email" },
+          { "Endpoint": { "Ref": "OperatorEMail-diff" }, "Protocol": "email-diff" },
           { "Endpoint": { "Ref": "SNSWala" }, "Protocol": "sns" }
         ]
       }

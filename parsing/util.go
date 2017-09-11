@@ -7,35 +7,35 @@ import (
 type Keyvalue map[string]interface{}
 type Keyslice map[string][]Keyvalue
 
-type RemovedDifference struct{
-	Key string
-	Path string
+type RemovedDifference struct {
+	Key   string
+	Path  string
 	Value interface{}
 }
 
-type AddedDifference struct{
-	Key string
-	Path string
+type AddedDifference struct {
+	Key   string
+	Path  string
 	Value interface{}
 }
 
-type ChangedDifference struct{
-	Key string
-	Path string
+type ChangedDifference struct {
+	Key      string
+	Path     string
 	NewValue interface{}
 	OldValue interface{}
 }
 
-type ConsumableDifference struct{
+type ConsumableDifference struct {
 	Changed []ChangedDifference `json:",omitempty"`
-	Added []AddedDifference `json:",omitempty"`
+	Added   []AddedDifference   `json:",omitempty"`
 	Removed []RemovedDifference `json:",omitempty"`
 }
 
 func Remarshal(input interface{}) Keyvalue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back Keyvalue
-	out,_ := json.Marshal(input)
+	out, _ := json.Marshal(input)
 	_ = json.Unmarshal([]byte(out), &back)
 	return back
 }
@@ -53,7 +53,7 @@ func PathFormatter(input []string) string {
 	// Given an array, construct it into a jmespath expression (string with . separator)
 	var r string
 	for i := range input {
-		if i == (len(input)-1) {
+		if i == (len(input) - 1) {
 			r = r + input[i]
 		} else {
 			r = r + input[i] + "."
@@ -71,5 +71,3 @@ func IndexOf(inputList []string, inputKey string) int {
 	}
 	return -1
 }
-
-

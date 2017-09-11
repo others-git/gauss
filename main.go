@@ -110,7 +110,6 @@ func main() {
 	app.Run(os.Args)
 
 }
-
 func diff(
 
 	origin string,

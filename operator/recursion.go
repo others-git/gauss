@@ -1,11 +1,11 @@
 package operator
 
 import (
-	"strconv"
 	"fmt"
-	"os"
 	"github.com/beard1ess/gauss/parsing"
+	"os"
 	"reflect"
+	"strconv"
 )
 
 var ObjectDiff = parsing.ConsumableDifference{}
@@ -31,7 +31,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 		}
 		if proc {
 			for k := range original {
-				recursion(parsing.Keyvalue{k:original[k]},parsing.Keyvalue{k:modified[k]},path)
+				recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path)
 			}
 		}
 		return
@@ -56,16 +56,26 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 				recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), npath)
 				return
 			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
-				valOrig,_ := valOrig.([]interface{})
-				valMod,_ := valMod.([]interface{})
+				valOrig, _ := valOrig.([]interface{})
+				valMod, _ := valMod.([]interface{})
 				if len(valOrig) != len(valMod) {
+					if len(valOrig) > len(valMod) {
+						for i := range valOrig {
+							fmt.Sprint(i)
+						}
+					} else {
+						for i := range valMod {
+							fmt.Sprint(i)
+						}
+					}
 					// TODO array length differences, how to interpret?
 					fmt.Println("Cannot handle array length differences yet, sorry not sorry; kind of sorry.")
 					os.Exit(1)
 				} else {
 					for i := range valOrig {
 						if !(reflect.DeepEqual(valOrig[i], valMod[i])) {
-							path[len(path)-1] = path[len(path)-1] + "[" + strconv.Itoa(i) + "]"
+							iter := len(path) - 1
+							path[iter] = path[iter] + "[" + strconv.Itoa(i) + "]"
 							recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), path)
 							return
 						}
