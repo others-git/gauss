@@ -1,22 +1,21 @@
 package main
 
 import (
-	"os"
-	"github.com/urfave/cli"
-	"io/ioutil"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/beard1ess/gauss/operator"
+	"github.com/beard1ess/gauss/parsing"
+	"github.com/urfave/cli"
+	"io"
+	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 	"regexp"
-	"github.com/beard1ess/gauss/parsing"
-	"github.com/beard1ess/gauss/operator"
-
 )
 
 var (
 	FormattedDiff parsing.Keyslice
-
 )
 
 func check(e error) {
@@ -25,35 +24,33 @@ func check(e error) {
 	}
 }
 
-
-
 func format(input parsing.ConsumableDifference) parsing.Keyvalue {
 	var return_value parsing.Keyvalue
 
 	FormattedDiff = nil
 	/*
-	for i := range input["Changed"] {
-		path_builder(input["Changed"][i]["Path"].([]string))
-	}
-	for i := range input["Added"] {
-		path_builder(input["Added"][i]["Path"].([]string))
-	}
-	for i := range input["Removed"] {
-		path_builder(input["Removed"][i]["Path"].([]string))
+		for i := range input["Changed"] {
+			path_builder(input["Changed"][i]["Path"].([]string))
+		}
+		for i := range input["Added"] {
+			path_builder(input["Added"][i]["Path"].([]string))
+		}
+		for i := range input["Removed"] {
+			path_builder(input["Removed"][i]["Path"].([]string))
 
-	}
+		}
 	*/
 
 	return return_value
 }
 
-func path_builder(path []string)  parsing.Keyvalue{
+func path_builder(path []string) parsing.Keyvalue {
 	var object parsing.Keyvalue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")
 	//path_length := len(path)
-	for i:= range path {
-		if ok,_ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
+	for i := range path {
+		if ok, _ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
 			index := r.FindString(path[i])
 			fmt.Println(index)
 		} else {
@@ -67,7 +64,7 @@ func path_builder(path []string)  parsing.Keyvalue{
 }
 
 func main() {
-	var patch, object, original_obj, modified_obj string
+	var patch, object string
 
 	app := cli.NewApp()
 	app.Name = "Gauss"
@@ -76,7 +73,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "test, t",
+			Name:  "test, t",
 			Usage: "just taking up space",
 		},
 	}
@@ -88,101 +85,61 @@ func main() {
 			Usage:   "Diff json objects",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "origin, o",
-					Usage: "Original `OBJECT` to compare against",
-					Value: "",
-					Destination: &original_obj,
+					Name:   "origin, o",
+					Usage:  "Original `OBJECT` to compare against",
+					Value:  "",
 					EnvVar: "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "modified, m",
-					Usage: "Modified `OBJECT` to compare against",
-					Value: "",
-					Destination: &modified_obj,
+					Name:   "modified, m",
+					Usage:  "Modified `OBJECT` to compare against",
+					Value:  "",
 					EnvVar: "MODIFIED_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "output",
-					Usage: "Output types available: human, machine",
-					Value: "machine",
+					Name:   "output",
+					Usage:  "Output types available: human, machine",
+					Value:  "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
-				/*
-				cli.StringFlag{
-					Name: "output, O",
-					Usage: "File output location",
-					Value: "",
-					Destination: &modified_obj,
-				},
-				*/
 			},
-			Action:  func(c *cli.Context) error {
-				var json_original, json_modified parsing.Keyvalue
-				var path []string
-				var ObjectDiff parsing.ConsumableDifference
-				if original_obj == "" {
+			Action: func(c *cli.Context) error {
+
+				if c.String("origin") == "" {
 					fmt.Print("ORIGIN is required!\n\n")
 					cli.ShowCommandHelp(c, "diff")
 					os.Exit(1)
 				}
-				if modified_obj == "" {
+
+				if c.String("modified") == "" {
 					fmt.Print("MODIFIED is required!\n\n")
 					cli.ShowCommandHelp(c, "diff")
 					os.Exit(1)
 				}
 
-				/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
-
-				/*
-				ObjectDiff["Changed"] = []Keyvalue{}
-				ObjectDiff["Added"] = []Keyvalue{}
-				ObjectDiff["Removed"] = []Keyvalue{}
-				*/
-
-				read,err := ioutil.ReadFile(original_obj)
-				check(err)
-				_ = json.Unmarshal([]byte(read), &json_original)
-
-				read,err = ioutil.ReadFile(modified_obj)
-				check(err)
-				_ = json.Unmarshal([]byte(read), &json_modified)
-
-
-				if reflect.DeepEqual(json_original, json_modified) {
-					fmt.Println("No differences!")
-					os.Exit(0)
-				} else {
-					ObjectDiff = operator.Recursion(json_original, json_modified, path)
-				}
-
-				if c.String("output") == "human" {
-					format(ObjectDiff)
-				} else if c.String("output") == "machine" {
-					output,_ := json.Marshal(ObjectDiff)
-					os.Stdout.Write(output)
-				} else {
-					fmt.Println("Output type unknown.")
-					os.Exit(1)
-				}
-
-				return nil
+				return diff(
+					c.String("origin"),
+					c.String("modified"),
+					c.String("output"),
+					os.Stdout,
+				)
 			},
 		},
 		{
-			Name: "patch",
+			Name:    "patch",
 			Aliases: []string{"p"},
-			Usage:	"Apply patch file to json object",
+			Usage:   "Apply patch file to json object",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "patch, p",
-					Usage: "`PATCH` the OBJECT",
-					Value: "",
+					Name:        "patch, p",
+					Usage:       "`PATCH` the OBJECT",
+					Value:       "",
 					Destination: &patch,
 				},
 				cli.StringFlag{
-					Name: "object, o",
-					Usage: "`OBJECT` to PATCH",
-					Value: "",
+					Name:        "object, o",
+					Usage:       "`OBJECT` to PATCH",
+					Value:       "",
 					Destination: &object,
 				},
 			},
@@ -197,4 +154,55 @@ func main() {
 
 }
 
+func diff(
 
+	origin string,
+	modified string,
+	output string,
+	writer io.Writer,
+
+) error {
+
+	var json_original, json_modified parsing.Keyvalue
+	var path []string
+	var objectDiff parsing.ConsumableDifference
+
+	/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
+
+	read, err := ioutil.ReadFile(origin)
+	check(err)
+
+	err = json.Unmarshal([]byte(read), &json_original)
+	check(err)
+
+	read, err = ioutil.ReadFile(modified)
+	check(err)
+
+	err = json.Unmarshal([]byte(read), &json_modified)
+	check(err)
+
+	if reflect.DeepEqual(json_original, json_modified) {
+		fmt.Println("No differences!")
+		os.Exit(0)
+	} else {
+		objectDiff = operator.Recursion(json_original, json_modified, path)
+	}
+
+	switch output {
+
+	case "human":
+		//writer.Write(format(objectDiff))
+
+	case "machine":
+		output, err := json.Marshal(objectDiff)
+		check(err)
+
+		writer.Write(output)
+
+	default:
+		fmt.Println("Output type unknown.")
+		os.Exit(1)
+	}
+
+	return nil
+}
