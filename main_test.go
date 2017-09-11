@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -37,15 +38,25 @@ func TestDiff(t *testing.T) {
 	json.Unmarshal(testData, &expected)
 	require.Nil(err, "The test data should be unmarshaled without error.")
 
-	temp, _ := json.Marshal(expected)
-	fmt.Println(string(temp))
-
 	json.Unmarshal(result, &actual)
 	assert.Nil(err, "The result should be unmarshaled without error.")
 
 	assert.Equal(
 		reflect.DeepEqual(expected, actual),
 		true,
-		"The diff of one.json and two.json should equal the test diff.",
+		fmt.Sprintf(
+			strings.Join(
+				[]string{
+					"The diff of one.json and two.json should equal the test diff.\n",
+					"Expected:\n",
+					"%s",
+					"Actual:\n",
+					"%s",
+				},
+				" ",
+			),
+			string(testData),
+			string(result),
+		),
 	)
 }

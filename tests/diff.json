@@ -1,1 +1,1 @@
-{"Changed":[{"Key":"Subscription","Path":"Resources.NotificationTopic.Properties[0]","NewValue":{"Endpoint":{"Ref":"OperatorEMail"},"Protocol":"email"},"OldValue":{"Endpoint":{"Ref":"OperatorEMail"},"Protocol":"email-diff"}}]}
+{"Changed":[{"Key":"Ref","Path":"Resources.NotificationTopic.Properties[0].Endpoint","NewValue":"OperatorEMail","OldValue":"OperatorEMail-diff"}]}
