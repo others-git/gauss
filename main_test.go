@@ -15,48 +15,88 @@ import (
 
 func TestDiff(t *testing.T) {
 
-	var expected, actual parsing.ConsumableDifference
+	/*
+	 * Test Cases
+	 */
+	testCases := []struct {
+		origin   string
+		modified string
+		diff     string
+		output   string
+	}{
+		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "machine"},
+		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "machine"},
+	}
 
-	assert := assert.New(t)
-	require := require.New(t)
+	/*
+	 * Test Logic
+	 */
+	for _, tc := range testCases {
 
-	testBuffer := bytes.NewBuffer(nil) // A testing writer
-
-	diff(
-		"./tests/one.json",
-		"./tests/two.json",
-		"machine",
-		testBuffer,
-	)
-
-	result, err := ioutil.ReadAll(testBuffer)
-	require.Nil(err, "The test buffer should be readable")
-
-	testData, err := ioutil.ReadFile("./tests/diff.json")
-	require.Nil(err, "The test diff should be readable.")
-
-	json.Unmarshal(testData, &expected)
-	require.Nil(err, "The test data should be unmarshaled without error.")
-
-	json.Unmarshal(result, &actual)
-	assert.Nil(err, "The result should be unmarshaled without error.")
-
-	assert.Equal(
-		reflect.DeepEqual(expected, actual),
-		true,
-		fmt.Sprintf(
-			strings.Join(
-				[]string{
-					"The diff of one.json and two.json should equal the test diff.\n",
-					"Expected:\n",
-					"%s",
-					"Actual:\n",
-					"%s",
-				},
-				" ",
+		t.Run(
+			fmt.Sprintf(
+				"Origin:%s, Modified:%s, Diff:%s, Output:%s",
+				tc.origin,
+				tc.modified,
+				tc.diff,
+				tc.output,
 			),
-			string(testData),
-			string(result),
-		),
-	)
+
+			func(t *testing.T) {
+
+				// Create instances of test helper objects
+				assert := assert.New(t)
+				require := require.New(t)
+
+				// Read and unmarshal the expected output.
+				expectedJson, err := ioutil.ReadFile("./tests/" + tc.diff)
+				require.Nil(err, "The test diff should be readable.")
+
+				var expected parsing.ConsumableDifference
+				json.Unmarshal(expectedJson, &expected)
+				require.Nil(err, "The test data should be unmarshaled without error.")
+
+				// Execute a Diff against the Origin and Modified test files.
+				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
+
+				diff(
+					"./tests/"+tc.origin,
+					"./tests/"+tc.modified,
+					tc.output,
+					testBuffer,
+				)
+
+				// Read and unmarshal the actual output.
+				result, err := ioutil.ReadAll(testBuffer)
+				require.Nil(err, "The test buffer should be readable")
+
+				var actual parsing.ConsumableDifference
+				json.Unmarshal(result, &actual)
+				assert.Nil(err, "The result should be unmarshaled without error.")
+
+				// The Expected and Actual output should be deeply equal.
+				assert.Equal(
+					reflect.DeepEqual(expected, actual),
+					true,
+					fmt.Sprintf(
+						strings.Join(
+							[]string{
+								"The diff of %s and %s should equal %s.\n",
+								"Expected:\n",
+								"%s",
+								"Actual:\n",
+								"%s",
+							},
+							" ",
+						),
+						tc.origin,
+						tc.modified,
+						tc.diff,
+						string(expectedJson),
+						string(result),
+					),
+				)
+			},
+		)
+	}
 }
