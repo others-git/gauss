@@ -30,7 +30,8 @@ func ExampleParse() {
 	fmt.Println()
 
 	t := []string{"g", "h", "i"}
-	parsing.PathFormatter(t)
+	res := parsing.PathFormatter(t)
+	fmt.Println(res)
 }
 
 func TestMain(*testing.M) {

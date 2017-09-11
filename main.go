@@ -11,11 +11,6 @@ import (
 	"log"
 	"os"
 	"reflect"
-	"regexp"
-)
-
-var (
-	FormattedDiff parsing.Keyslice
 )
 
 func check(e error) {
@@ -24,44 +19,6 @@ func check(e error) {
 	}
 }
 
-func format(input parsing.ConsumableDifference) parsing.Keyvalue {
-	var return_value parsing.Keyvalue
-
-	FormattedDiff = nil
-	/*
-		for i := range input["Changed"] {
-			path_builder(input["Changed"][i]["Path"].([]string))
-		}
-		for i := range input["Added"] {
-			path_builder(input["Added"][i]["Path"].([]string))
-		}
-		for i := range input["Removed"] {
-			path_builder(input["Removed"][i]["Path"].([]string))
-
-		}
-	*/
-
-	return return_value
-}
-
-func path_builder(path []string) parsing.Keyvalue {
-	var object parsing.Keyvalue
-	FormattedDiff = nil
-	r, _ := regexp.Compile("[0-9]+")
-	//path_length := len(path)
-	for i := range path {
-		if ok, _ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
-			index := r.FindString(path[i])
-			fmt.Println(index)
-		} else {
-
-		}
-	}
-
-	fmt.Println(path)
-	fmt.Println(path)
-	return object
-}
 
 func main() {
 	var patch, object string
@@ -73,7 +30,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "test, t",
+			Name: "test, t",
 			Usage: "just taking up space",
 		},
 	}
@@ -85,25 +42,25 @@ func main() {
 			Usage:   "Diff json objects",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:   "origin, o",
-					Usage:  "Original `OBJECT` to compare against",
-					Value:  "",
+					Name: "origin, o",
+					Usage: "Original `OBJECT` to compare against",
+					Value: "",
 					EnvVar: "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name:   "modified, m",
-					Usage:  "Modified `OBJECT` to compare against",
-					Value:  "",
+					Name: "modified, m",
+					Usage: "Modified `OBJECT` to compare against",
+					Value: "",
 					EnvVar: "MODIFIED_OBJECT",
 				},
 				cli.StringFlag{
-					Name:   "output",
-					Usage:  "Output types available: human, machine",
-					Value:  "machine",
+					Name: "output",
+					Usage: "Output types available: human, machine",
+					Value: "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
 			},
-			Action: func(c *cli.Context) error {
+			Action:  func(c *cli.Context) error {
 
 				if c.String("origin") == "" {
 					fmt.Print("ORIGIN is required!\n\n")
@@ -126,20 +83,20 @@ func main() {
 			},
 		},
 		{
-			Name:    "patch",
+			Name: "patch",
 			Aliases: []string{"p"},
-			Usage:   "Apply patch file to json object",
+			Usage:	"Apply patch file to json object",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:        "patch, p",
-					Usage:       "`PATCH` the OBJECT",
-					Value:       "",
+					Name: "patch, p",
+					Usage: "`PATCH` the OBJECT",
+					Value: "",
 					Destination: &patch,
 				},
 				cli.StringFlag{
-					Name:        "object, o",
-					Usage:       "`OBJECT` to PATCH",
-					Value:       "",
+					Name: "object, o",
+					Usage: "`OBJECT` to PATCH",
+					Value: "",
 					Destination: &object,
 				},
 			},
