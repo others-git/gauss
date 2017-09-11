@@ -1,16 +1,15 @@
 package main
 
 import (
-	"os"
+	"encoding/json"
+	"fmt"
+	"github.com/beard1ess/gauss/operator"
+	"github.com/beard1ess/gauss/parsing"
 	"github.com/urfave/cli"
 	"io/ioutil"
-	"fmt"
-	"encoding/json"
 	"log"
+	"os"
 	"reflect"
-	"github.com/beard1ess/gauss/parsing"
-	"github.com/beard1ess/gauss/operator"
-
 )
 
 func check(e error) {
@@ -18,9 +17,6 @@ func check(e error) {
 		log.Fatal(e)
 	}
 }
-
-
-
 
 func main() {
 	var patch, object, original_obj, modified_obj string
@@ -32,7 +28,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "test, t",
+			Name:  "test, t",
 			Usage: "just taking up space",
 		},
 	}
@@ -44,27 +40,27 @@ func main() {
 			Usage:   "Diff json objects",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "origin, o",
-					Usage: "Original `OBJECT` to compare against",
-					Value: "",
+					Name:        "origin, o",
+					Usage:       "Original `OBJECT` to compare against",
+					Value:       "",
 					Destination: &original_obj,
-					EnvVar: "ORIGINAL_OBJECT",
+					EnvVar:      "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "modified, m",
-					Usage: "Modified `OBJECT` to compare against",
-					Value: "",
+					Name:        "modified, m",
+					Usage:       "Modified `OBJECT` to compare against",
+					Value:       "",
 					Destination: &modified_obj,
-					EnvVar: "MODIFIED_OBJECT",
+					EnvVar:      "MODIFIED_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "output",
-					Usage: "Output types available: human, machine",
-					Value: "machine",
+					Name:   "output",
+					Usage:  "Output types available: human, machine",
+					Value:  "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
 			},
-			Action:  func(c *cli.Context) error {
+			Action: func(c *cli.Context) error {
 				var json_original, json_modified parsing.Keyvalue
 				var path []string
 				var ObjectDiff parsing.ConsumableDifference
@@ -81,14 +77,13 @@ func main() {
 					os.Exit(1)
 				}
 
-				read,err := ioutil.ReadFile(original_obj)
+				read, err := ioutil.ReadFile(original_obj)
 				check(err)
 				_ = json.Unmarshal([]byte(read), &json_original)
 
-				read,err = ioutil.ReadFile(modified_obj)
+				read, err = ioutil.ReadFile(modified_obj)
 				check(err)
 				_ = json.Unmarshal([]byte(read), &json_modified)
-
 
 				if reflect.DeepEqual(json_original, json_modified) {
 					fmt.Println("No differences!")
@@ -100,7 +95,7 @@ func main() {
 				if c.String("output") == "human" {
 					parsing.Format(ObjectDiff)
 				} else if c.String("output") == "machine" {
-					output,_ := json.Marshal(ObjectDiff)
+					output, _ := json.Marshal(ObjectDiff)
 					os.Stdout.Write(output)
 				} else {
 					fmt.Println("Output type unknown.")
@@ -111,20 +106,20 @@ func main() {
 			},
 		},
 		{
-			Name: "patch",
+			Name:    "patch",
 			Aliases: []string{"p"},
-			Usage:	"Apply patch file to json object",
+			Usage:   "Apply patch file to json object",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "patch, p",
-					Usage: "`PATCH` the OBJECT",
-					Value: "",
+					Name:        "patch, p",
+					Usage:       "`PATCH` the OBJECT",
+					Value:       "",
 					Destination: &patch,
 				},
 				cli.StringFlag{
-					Name: "object, o",
-					Usage: "`OBJECT` to PATCH",
-					Value: "",
+					Name:        "object, o",
+					Usage:       "`OBJECT` to PATCH",
+					Value:       "",
 					Destination: &object,
 				},
 			},
@@ -138,5 +133,3 @@ func main() {
 	app.Run(os.Args)
 
 }
-
-
