@@ -38,7 +38,7 @@ func TestDiff(t *testing.T) {
 	require.Nil(err, "The test data should be unmarshaled without error.")
 
 	temp, _ := json.Marshal(expected)
-	fmt.Println(temp)
+	fmt.Println(string(temp))
 
 	json.Unmarshal(result, &actual)
 	assert.Nil(err, "The result should be unmarshaled without error.")
