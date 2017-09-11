@@ -8,14 +8,8 @@ import (
 	"encoding/json"
 	"log"
 	"reflect"
-	"regexp"
 	"github.com/beard1ess/gauss/parsing"
 	"github.com/beard1ess/gauss/operator"
-
-)
-
-var (
-	FormattedDiff parsing.Keyslice
 
 )
 
@@ -27,44 +21,6 @@ func check(e error) {
 
 
 
-func format(input parsing.ConsumableDifference) parsing.Keyvalue {
-	var return_value parsing.Keyvalue
-
-	FormattedDiff = nil
-	/*
-	for i := range input["Changed"] {
-		path_builder(input["Changed"][i]["Path"].([]string))
-	}
-	for i := range input["Added"] {
-		path_builder(input["Added"][i]["Path"].([]string))
-	}
-	for i := range input["Removed"] {
-		path_builder(input["Removed"][i]["Path"].([]string))
-
-	}
-	*/
-
-	return return_value
-}
-
-func path_builder(path []string)  parsing.Keyvalue{
-	var object parsing.Keyvalue
-	FormattedDiff = nil
-	r, _ := regexp.Compile("[0-9]+")
-	//path_length := len(path)
-	for i:= range path {
-		if ok,_ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
-			index := r.FindString(path[i])
-			fmt.Println(index)
-		} else {
-
-		}
-	}
-
-	fmt.Println(path)
-	fmt.Println(path)
-	return object
-}
 
 func main() {
 	var patch, object, original_obj, modified_obj string
@@ -107,37 +63,23 @@ func main() {
 					Value: "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
-				/*
-				cli.StringFlag{
-					Name: "output, O",
-					Usage: "File output location",
-					Value: "",
-					Destination: &modified_obj,
-				},
-				*/
 			},
 			Action:  func(c *cli.Context) error {
 				var json_original, json_modified parsing.Keyvalue
 				var path []string
 				var ObjectDiff parsing.ConsumableDifference
+
 				if original_obj == "" {
 					fmt.Print("ORIGIN is required!\n\n")
 					cli.ShowCommandHelp(c, "diff")
 					os.Exit(1)
 				}
+
 				if modified_obj == "" {
 					fmt.Print("MODIFIED is required!\n\n")
 					cli.ShowCommandHelp(c, "diff")
 					os.Exit(1)
 				}
-
-				/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
-
-				/*
-				ObjectDiff["Changed"] = []Keyvalue{}
-				ObjectDiff["Added"] = []Keyvalue{}
-				ObjectDiff["Removed"] = []Keyvalue{}
-				*/
 
 				read,err := ioutil.ReadFile(original_obj)
 				check(err)
@@ -156,7 +98,7 @@ func main() {
 				}
 
 				if c.String("output") == "human" {
-					format(ObjectDiff)
+					parsing.Format(ObjectDiff)
 				} else if c.String("output") == "machine" {
 					output,_ := json.Marshal(ObjectDiff)
 					os.Stdout.Write(output)

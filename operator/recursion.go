@@ -60,7 +60,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 				valMod,_ := valMod.([]interface{})
 				if len(valOrig) != len(valMod) {
 					// TODO array length differences
-					fmt.Println("I cannot handle array length differences yet, sorry not sorry; kind of sorry.")
+					fmt.Println("Cannot handle array length differences yet, sorry not sorry; kind of sorry.")
 					os.Exit(1)
 				} else {
 					for i := range valOrig {
