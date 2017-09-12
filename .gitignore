@@ -7,4 +7,5 @@ Session.vim
 .netrwhist
 *~    
 
+*.go.orig
 
