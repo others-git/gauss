@@ -57,7 +57,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path 
 		if !(reflect.DeepEqual(valMod, valOrig)) {
 			if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 				path = append(path, k)
-				recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, objectDiff)
+				objectDiff = recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, objectDiff)
 				return objectDiff
 			} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 				var match bool
@@ -74,7 +74,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path 
 								} else if i == ii {
 									iter := len(path) - 1
 									path[iter] = path[iter] + "[" + strconv.Itoa(i) + "]"
-									recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), path, objectDiff)
+									objectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), path, objectDiff)
 								}
 							}
 							if !(match) {
@@ -94,7 +94,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path 
 								} else if i == ii {
 									iter := len(path) - 1
 									path[iter] = path[iter] + "[" + strconv.Itoa(i) + "]"
-									recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), path, objectDiff)
+									objectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), path, objectDiff)
 								}
 							}
 							if !(match) {
@@ -112,7 +112,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path 
 						if !(reflect.DeepEqual(valOrig[i], valMod[i])) {
 							iter := len(npath) - 1
 							npath[iter] = npath[iter] + "[" + strconv.Itoa(i) + "]"
-							recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), npath, objectDiff)
+							objectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]), npath, objectDiff)
 						}
 					}
 					return objectDiff
