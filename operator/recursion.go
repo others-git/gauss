@@ -13,7 +13,7 @@ func recursion(
 	input_path []string,
 	ObjectDiff parsing.ConsumableDifference,
 
-	) parsing.ConsumableDifference {
+) parsing.ConsumableDifference {
 
 	path := make([]string, len(input_path))
 	copy(path, input_path)
@@ -164,7 +164,6 @@ func recursion(
 	}
 	return ObjectDiff
 }
-
 
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff = parsing.ConsumableDifference{}

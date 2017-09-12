@@ -81,7 +81,6 @@ func IndexOf(inputList []string, inputKey string) int {
 	return -1
 }
 
-
 func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
 	istanbool := true
 	o_slice := ListStripper(o)
