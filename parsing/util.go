@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"encoding/json"
+	"reflect"
 )
 
 type Keyvalue map[string]interface{}
@@ -70,4 +71,13 @@ func IndexOf(inputList []string, inputKey string) int {
 		}
 	}
 	return -1
+}
+
+func ArrayContains(arrayList []interface{}, arrayItem interface{}) bool {
+	for i := range arrayList{
+		if reflect.DeepEqual(arrayList[i], arrayItem){
+			return true
+		}
+	}
+	return false
 }

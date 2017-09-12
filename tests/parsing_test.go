@@ -8,7 +8,6 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 )
 

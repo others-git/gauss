@@ -205,7 +205,12 @@
     "NotificationTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
-        "Subscription": [ { "Endpoint": { "Ref": "OperatorEMail" }, "Protocol": "email" },{ "Endpoint": { "Ref": "SNSWala" }, "Protocol": "sns" } ]
+        "Subscription": [
+          {"test":"value"},
+          {"test1":"value1"},
+          { "Endpoint": { "Ref": "SNSWala" }, "Protocol": "sns-diff" },
+          { "Endpoint": { "Ref": "OperatorEMail" }, "Protocol": "email" }
+        ]
       }
     },
 
