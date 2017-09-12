@@ -1,0 +1,47 @@
+{
+  "Changed": [{
+    "Key": "Type",
+    "Path": "Resources.ALB",
+    "NewValue": "LoadBalancerv2-t",
+    "OldValue": "LoadBalancerv2"
+  }, {
+    "Key": "Size",
+    "Path": "Resources.EC2",
+    "NewValue": "Max-t",
+    "OldValue": {
+      "Ref": "size"
+    }
+  }, {
+    "Key": "Type",
+    "Path": "Resources.EC2",
+    "NewValue": "Instance-t",
+    "OldValue": "Instance"
+  }, {
+    "Key": "Ref",
+    "Path": "Outputs.Default[0].ALB",
+    "NewValue": "Size-diff",
+    "OldValue": "Size"
+  }],
+  "Added": [{
+    "Key": "test",
+    "Path": "",
+    "Value": "new"
+  }, {
+    "Key": "test2",
+    "Path": "",
+    "Value": "diff"
+  }, {
+    "Key": "EC2a",
+    "Path": "Outputs.Default[1]",
+    "Value": {
+      "Ref": "Size"
+    }
+  }],
+  "Removed": [{
+    "Key": "EC2",
+    "Path": "Outputs.Default[1]",
+    "Value": {
+      "Ref": "Size"
+    }
+  }]
+}

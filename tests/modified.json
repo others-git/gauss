@@ -1,19 +1,20 @@
 {
   "Resources": {
     "ALB": {
-      "Type": "LoadBalancerv2",
+      "Type": "LoadBalancerv2-t",
       "Size": "Max"
     },
     "EC2": {
-      "Type": "Instance",
-      "Size": "t2"
+      "Type": "Instance-t",
+      "Size": "Max-t"
     }
   },
   "Outputs": {
     "Default": [
-      {"ALB": {"Ref": "Size"}},
-      {"EC2": {"Ref": "Size"}}
+      {"ALB": {"Ref": "Size-diff"}},
+      {"EC2a": {"Ref": "Size"}}
     ]
   },
-  "test":"new"
+  "test":"new",
+  "test2":"diff"
 }
