@@ -8,7 +8,6 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -16,7 +15,7 @@ func ExampleParse() {
 
 	var JsonInput interface{}
 
-	read, _ := ioutil.ReadFile("./one.json")
+	read, _ := ioutil.ReadFile("./original.json")
 
 	_ = json.Unmarshal(read, &JsonInput)
 	searched, err := jmespath.Search("Resources.ALBListener.Properties.DefaultActions[0]", JsonInput)

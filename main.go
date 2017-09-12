@@ -19,7 +19,6 @@ func check(e error) {
 	}
 }
 
-
 func main() {
 	var patch, object string
 
@@ -30,7 +29,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "test, t",
+			Name:  "test, t",
 			Usage: "just taking up space",
 		},
 	}
@@ -42,25 +41,25 @@ func main() {
 			Usage:   "Diff json objects",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "origin, o",
-					Usage: "Original `OBJECT` to compare against",
-					Value: "",
-					EnvVar: "ORIGINAL_OBJECT",
+					Name:        "origin, o",
+					Usage:       "Original `OBJECT` to compare against",
+					Value:       "",
+					EnvVar:      "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "modified, m",
-					Usage: "Modified `OBJECT` to compare against",
-					Value: "",
-					EnvVar: "MODIFIED_OBJECT",
+					Name:        "modified, m",
+					Usage:       "Modified `OBJECT` to compare against",
+					Value:       "",
+					EnvVar:      "MODIFIED_OBJECT",
 				},
 				cli.StringFlag{
-					Name: "output",
-					Usage: "Output types available: human, machine",
-					Value: "machine",
+					Name:   "output",
+					Usage:  "Output types available: human, machine",
+					Value:  "machine",
 					EnvVar: "DIFF_OUTPUT",
 				},
 			},
-			Action:  func(c *cli.Context) error {
+			Action: func(c *cli.Context) error {
 
 				if c.String("origin") == "" {
 					fmt.Print("ORIGIN is required!\n\n")
@@ -83,20 +82,20 @@ func main() {
 			},
 		},
 		{
-			Name: "patch",
+			Name:    "patch",
 			Aliases: []string{"p"},
-			Usage:	"Apply patch file to json object",
+			Usage:   "Apply patch file to json object",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "patch, p",
-					Usage: "`PATCH` the OBJECT",
-					Value: "",
+					Name:        "patch, p",
+					Usage:       "`PATCH` the OBJECT",
+					Value:       "",
 					Destination: &patch,
 				},
 				cli.StringFlag{
-					Name: "object, o",
-					Usage: "`OBJECT` to PATCH",
-					Value: "",
+					Name:        "object, o",
+					Usage:       "`OBJECT` to PATCH",
+					Value:       "",
 					Destination: &object,
 				},
 			},

@@ -2,6 +2,8 @@ package parsing
 
 import (
 	"encoding/json"
+	"log"
+	"fmt"
 )
 
 type Keyvalue map[string]interface{}
@@ -32,11 +34,19 @@ type ConsumableDifference struct {
 	Removed []RemovedDifference `json:",omitempty"`
 }
 
+func marshError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func Remarshal(input interface{}) Keyvalue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back Keyvalue
-	out, _ := json.Marshal(input)
-	_ = json.Unmarshal([]byte(out), &back)
+	out, e := json.Marshal(input)
+	marshError(e)
+	e = json.Unmarshal([]byte(out), &back)
+	marshError(e)
 	return back
 }
 
@@ -64,10 +74,34 @@ func PathFormatter(input []string) string {
 
 func IndexOf(inputList []string, inputKey string) int {
 	// Finds index of an object given an array
+	fmt.Println("checking key:", inputKey)
 	for i, v := range inputList {
 		if v == inputKey {
+			fmt.Println("key is index", i)
 			return i
 		}
 	}
 	return -1
+}
+
+
+func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
+	istanbool := true
+	fmt.Println(ListStripper(o))
+	fmt.Println(ListStripper(m))
+	for k := range ListStripper(o) {
+		val := IndexOf(ListStripper(m), ListStripper(o)[k])
+		if val == -1 {
+			istanbool = false
+		}
+	}
+
+	for ke := range ListStripper(m) {
+		fmt.Println("literal key and index", ListStripper(m)[ke], ke)
+		val := IndexOf(ListStripper(o), ListStripper(m)[ke])
+		if val == -1 {
+			istanbool = false
+		}
+	}
+	return istanbool
 }
