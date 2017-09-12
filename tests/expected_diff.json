@@ -5,15 +5,17 @@
     "NewValue": "LoadBalancerv2-t",
     "OldValue": "LoadBalancerv2"
   }, {
+    "Key": "Size",
+    "Path": "Resources.EC2",
+    "NewValue": "Max-t",
+    "OldValue": {
+      "Ref": "size"
+    }
+  }, {
     "Key": "Type",
     "Path": "Resources.EC2",
     "NewValue": "Instance-t",
     "OldValue": "Instance"
-  }, {
-    "Key": "Size",
-    "Path": "Resources.EC2",
-    "NewValue": "t2-t",
-    "OldValue": "t2"
   }, {
     "Key": "Ref",
     "Path": "Outputs.Default[0].ALB",
