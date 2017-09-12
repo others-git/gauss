@@ -18,12 +18,5 @@
     "Key": "test2",
     "Path": "",
     "Value": "diff"
-  }],
-  "Removed": [{
-    "Key": "Default[1]",
-    "Path": "Outputs.Default[1]",
-    "Value": [
-      {"EC2": {"Ref": "Size"}}
-    ]
   }]
 }
