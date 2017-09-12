@@ -16,6 +16,12 @@ import (
 func TestDiff(t *testing.T) {
 
 	/*
+	 * Create instances of test helper objects
+	 */
+	assert := assert.New(t)
+	require := require.New(t)
+
+	/*
 	 * Test Cases
 	 */
 	testCases := []struct {
@@ -43,10 +49,6 @@ func TestDiff(t *testing.T) {
 			),
 
 			func(t *testing.T) {
-
-				// Create instances of test helper objects
-				assert := assert.New(t)
-				require := require.New(t)
 
 				// Read and unmarshal the expected output.
 				expectedJson, err := ioutil.ReadFile("./tests/" + tc.diff)
