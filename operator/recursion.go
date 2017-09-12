@@ -4,35 +4,76 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"reflect"
 	"strconv"
+	"fmt"
 )
 
 var ObjectDiff = parsing.ConsumableDifference{}
 
-func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
+func keys(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
+	fmt.Println(original)
+	fmt.Println(modified)
+	for k, v := range modified {
+		if parsing.IndexOf(parsing.ListStripper(original), k) == -1 {
+			added := parsing.AddedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
+			ObjectDiff.Added = append(ObjectDiff.Added, added)
+			delete(modified, k)
+		}
+	}
+	for k, v := range original {
+		if parsing.IndexOf(parsing.ListStripper(modified), k) == -1 {
+			removed := parsing.RemovedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
+			ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
+			delete(original, k)
+		}
+	}
+
+
+	recursion(original, modified, path)
+}
+
+func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path []string) {
+
+	path := make([]string, len(input_path))
+	copy(path, input_path)
+	if reflect.DeepEqual(original, modified) {
+		return
+	}
+
+	if !(parsing.UnorderedKeyMatch(original, modified)) {
+
+		keys(original, modified, path)
+		return
+
+	}
+	/*
 	if len(parsing.ListStripper(modified)) > 1 || len(parsing.ListStripper(original)) > 1 {
-		proc := true
+		// REFACTORING
 		for k, v := range original {
 			if parsing.IndexOf(parsing.ListStripper(modified), k) == -1 {
 				removed := parsing.RemovedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
 				ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
-				proc = false
+
+			} else if !(reflect.DeepEqual(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]})) {
+				recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path)
 			}
+
 		}
 		for k, v := range modified {
 			if parsing.IndexOf(parsing.ListStripper(original), k) == -1 {
 				added := parsing.AddedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
 				ObjectDiff.Added = append(ObjectDiff.Added, added)
-				proc = false
-			}
-		}
-		if proc {
-			for k := range original {
+
+			}else if !(reflect.DeepEqual(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]})) {
 				recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path)
 			}
 		}
+		// REFACTORING
+
+
 
 	} else {
-
+*/
+ 		// REFACTORING
 		for k := range original {
 			var valOrig, valMod interface{}
 			if reflect.TypeOf(original).Kind() == reflect.String {
@@ -117,8 +158,9 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []stri
 				}
 			}
 		}
+		return
 	}
-}
+
 
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
 	recursion(original, modified, path)

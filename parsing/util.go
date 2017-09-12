@@ -2,7 +2,7 @@ package parsing
 
 import (
 	"encoding/json"
-	"reflect"
+	"log"
 )
 
 type Keyvalue map[string]interface{}
@@ -33,11 +33,19 @@ type ConsumableDifference struct {
 	Removed []RemovedDifference `json:",omitempty"`
 }
 
+func marshError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func Remarshal(input interface{}) Keyvalue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back Keyvalue
-	out, _ := json.Marshal(input)
-	_ = json.Unmarshal([]byte(out), &back)
+	out, e := json.Marshal(input)
+	marshError(e)
+	e = json.Unmarshal([]byte(out), &back)
+	marshError(e)
 	return back
 }
 
@@ -73,11 +81,18 @@ func IndexOf(inputList []string, inputKey string) int {
 	return -1
 }
 
-func ArrayContains(arrayList []interface{}, arrayItem interface{}) bool {
-	for i := range arrayList{
-		if reflect.DeepEqual(arrayList[i], arrayItem){
-			return true
+
+func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
+	istanbool := true
+	for k := range ListStripper(o) {
+		if IndexOf(ListStripper(m), ListStripper(o)[k]) == -1 {
+			istanbool = false
 		}
 	}
-	return false
+	for k := range ListStripper(m) {
+		if IndexOf(ListStripper(o), ListStripper(m)[k]) == -1 {
+			istanbool = false
+		}
+	}
+	return istanbool
 }
