@@ -11,7 +11,8 @@
   },
   "Outputs": {
     "Default": [
-      {"ALB": {"Ref": "Size"}}
+      {"ALB": {"Ref": "Size-diff"}},
+      {"EC2": {"Ref": "Size"}}
     ]
   },
   "test":"new",
