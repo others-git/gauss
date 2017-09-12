@@ -79,12 +79,12 @@ func main() {
 
 				read, err := ioutil.ReadFile(original_obj)
 				check(err)
-				_ = json.Unmarshal([]byte(read), &json_original)
-
+				err = json.Unmarshal([]byte(read), &json_original)
+				check(err)
 				read, err = ioutil.ReadFile(modified_obj)
 				check(err)
-				_ = json.Unmarshal([]byte(read), &json_modified)
-
+				err = json.Unmarshal([]byte(read), &json_modified)
+				check(err)
 				if reflect.DeepEqual(json_original, json_modified) {
 					fmt.Println("No differences!")
 					os.Exit(0)
