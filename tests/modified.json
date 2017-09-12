@@ -5,7 +5,7 @@
       "Size": "Max"
     },
     "EC2": {
-      "Type": "Instance-dif",
+      "Type": "Instance",
       "Size": "t2"
     }
   },

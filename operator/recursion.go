@@ -10,13 +10,13 @@ import (
 var ObjectDiff = parsing.ConsumableDifference{}
 
 func keys(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
-	fmt.Println(original)
-	fmt.Println(modified)
+
 	for k, v := range modified {
 		if parsing.IndexOf(parsing.ListStripper(original), k) == -1 {
 			added := parsing.AddedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
 			ObjectDiff.Added = append(ObjectDiff.Added, added)
 			delete(modified, k)
+			fmt.Println("DELETED:  ",k)
 		}
 	}
 	for k, v := range original {
@@ -24,9 +24,9 @@ func keys(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) {
 			removed := parsing.RemovedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
 			ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
 			delete(original, k)
+			fmt.Println("DELETED:  ",k)
 		}
 	}
-
 
 	recursion(original, modified, path)
 }
@@ -45,36 +45,7 @@ func recursion(original parsing.Keyvalue, modified parsing.Keyvalue, input_path 
 		return
 
 	}
-	/*
-	if len(parsing.ListStripper(modified)) > 1 || len(parsing.ListStripper(original)) > 1 {
-		// REFACTORING
-		for k, v := range original {
-			if parsing.IndexOf(parsing.ListStripper(modified), k) == -1 {
-				removed := parsing.RemovedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
-				ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
-
-			} else if !(reflect.DeepEqual(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]})) {
-				recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path)
-			}
-
-		}
-		for k, v := range modified {
-			if parsing.IndexOf(parsing.ListStripper(original), k) == -1 {
-				added := parsing.AddedDifference{Path: parsing.PathFormatter(path), Key: k, Value: v}
-				ObjectDiff.Added = append(ObjectDiff.Added, added)
-
-			}else if !(reflect.DeepEqual(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]})) {
-				recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path)
-			}
-		}
-		// REFACTORING
-
-
-
-	} else {
-*/
- 		// REFACTORING
-		for k := range original {
+	for k := range original {
 			var valOrig, valMod interface{}
 			if reflect.TypeOf(original).Kind() == reflect.String {
 				valOrig = original
