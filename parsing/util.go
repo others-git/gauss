@@ -3,7 +3,6 @@ package parsing
 import (
 	"encoding/json"
 	"log"
-	"fmt"
 )
 
 type Keyvalue map[string]interface{}
@@ -74,31 +73,27 @@ func PathFormatter(input []string) string {
 
 func IndexOf(inputList []string, inputKey string) int {
 	// Finds index of an object given an array
-	fmt.Println("checking key:", inputKey)
 	for i, v := range inputList {
 		if v == inputKey {
-			fmt.Println("key is index", i)
 			return i
 		}
 	}
 	return -1
 }
 
-
 func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
 	istanbool := true
-	fmt.Println(ListStripper(o))
-	fmt.Println(ListStripper(m))
-	for k := range ListStripper(o) {
-		val := IndexOf(ListStripper(m), ListStripper(o)[k])
+	o_slice := ListStripper(o)
+	m_slice := ListStripper(m)
+	for k := range o_slice {
+		val := IndexOf(m_slice, o_slice[k])
 		if val == -1 {
 			istanbool = false
 		}
 	}
 
-	for ke := range ListStripper(m) {
-		fmt.Println("literal key and index", ListStripper(m)[ke], ke)
-		val := IndexOf(ListStripper(o), ListStripper(m)[ke])
+	for k := range m_slice {
+		val := IndexOf(o_slice, m_slice[k])
 		if val == -1 {
 			istanbool = false
 		}

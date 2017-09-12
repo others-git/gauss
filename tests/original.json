@@ -6,7 +6,7 @@
     },
     "EC2": {
       "Type": "Instance",
-      "Size": "t2"
+      "Size": {"Ref":"size"}
     }
   },
   "Outputs": {
