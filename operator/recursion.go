@@ -67,12 +67,20 @@ func recursion(
 			}
 
 			if !(reflect.DeepEqual(valMod, valOrig)) {
-				// TODO exception for value types mismatching
-				if reflect.TypeOf(valOrig).Kind() == reflect.Map {
+				// Specifically handle type mismatch
+				if reflect.TypeOf(valOrig) != reflect.TypeOf(valMod) {
+
+					changed := parsing.ChangedDifference{Path: parsing.PathFormatter(path),
+						Key: k, OldValue: valOrig, NewValue: valMod}
+					ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
+					return ObjectDiff
+
+				} else if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 
 					path = append(path, k)
 					ObjectDiff = recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, ObjectDiff)
 					return ObjectDiff
+
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 
 					// Variable setup
@@ -88,12 +96,16 @@ func recursion(
 							for i := range valOrig {
 								for ii := range valMod {
 									if reflect.DeepEqual(valOrig[i], valMod[ii]) {
+
 										match = true
+
 									} else if i == ii {
+
 										iter := len(path) - 1
 										path[iter] = path[iter] + "[" + strconv.Itoa(i) + "]"
 										ObjectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),
 											path, ObjectDiff)
+
 									}
 								}
 								if !(match) {

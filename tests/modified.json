@@ -6,7 +6,7 @@
     },
     "EC2": {
       "Type": "Instance-t",
-      "Size": "t2-t"
+      "Size": "Max-t"
     }
   },
   "Outputs": {
