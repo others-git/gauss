@@ -1,7 +1,6 @@
 package operator
 
 import (
-	"fmt"
 	"github.com/beard1ess/gauss/parsing"
 	"reflect"
 	"strconv"
@@ -55,6 +54,17 @@ func recursion(
 
 		for k := range original {
 
+			var valOrig, valMod interface{}
+			if reflect.TypeOf(original).Kind() == reflect.String {
+				valOrig = original
+			} else {
+				valOrig = original[k]
+			}
+			if reflect.TypeOf(modified).Kind() == reflect.String {
+				valMod = modified
+			} else {
+				valMod = modified[k]
+			}
 
 			if !(reflect.DeepEqual(valMod, valOrig)) {
 				// Specifically handle type mismatch
@@ -152,6 +162,8 @@ func recursion(
 			}
 		}
 	}
+	return ObjectDiff
+}
 
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff = parsing.ConsumableDifference{}
