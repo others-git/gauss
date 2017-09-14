@@ -91,7 +91,6 @@ func main() {
 				} else {
 					ObjectDiff = operator.Recursion(json_original, json_modified, path)
 				}
-
 				if c.String("output") == "human" {
 					parsing.Format(ObjectDiff)
 				} else if c.String("output") == "machine" {
