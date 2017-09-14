@@ -35,6 +35,7 @@ func TestDiff(t *testing.T) {
 		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "machine"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "machine"},
 		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "machine"},
+		{"original.json", "encodedOriginal.json", "noDifference.txt", "machine"},
 	}
 
 	/*
