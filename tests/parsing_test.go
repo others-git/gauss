@@ -21,7 +21,7 @@ func ExampleParse() {
 
 
 
-	f, err := ioutil.ReadFile("./origin.json")
+	f, err := ioutil.ReadFile("./encodedOriginal.json")
 	if err != nil {
 		fmt.Println(err)
 	}
