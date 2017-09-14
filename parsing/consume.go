@@ -53,7 +53,7 @@ func (g *Gaussian) Read(input string) {
 	}
 }
 
-// I wrote this and realized it may not be useful
+// I wrote this and realized it may not be useful, pass a writer to the function and it will marshal and write out the data
 func (g *Gaussian) Write(output io.Writer) {
 
 	switch g.Type {
@@ -70,7 +70,7 @@ func (g *Gaussian) Write(output io.Writer) {
 		output.Write(o)
 
 	default:
-		fmt.Println("Someout TYPE is messed up for Gaussian struct.")
+		fmt.Println("Somehow TYPE is messed up for Gaussian struct.")
 		os.Exit(9001)
 	}
 }
