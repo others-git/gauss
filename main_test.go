@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"github.com/beard1ess/gauss/ui"
 )
 
 func TestDiff(t *testing.T) {
@@ -63,7 +64,7 @@ func TestDiff(t *testing.T) {
 				// Execute a Diff against the Origin and Modified test files.
 				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
 
-				diff(
+				ui.Diff(
 					"./tests/"+tc.origin,
 					"./tests/"+tc.modified,
 					tc.output,

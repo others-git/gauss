@@ -35,7 +35,7 @@ type ConsumableDifference struct {
 
 func marshError(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Remashalling error! ", err)
 	}
 }
 

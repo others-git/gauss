@@ -6,10 +6,12 @@ import (
 
 	"fmt"
 
-	"io/ioutil"
 
 	"testing"
 
+	"github.com/dimchansky/utfbom"
+	"io/ioutil"
+	"bytes"
 	"os"
 )
 
@@ -17,13 +19,17 @@ func ExampleParse() {
 
 	//var JsonInput interface{}
 
-	read, err := ioutil.ReadFile("./encoding_test.json")
+
+
+	f, err := ioutil.ReadFile("./origin.json")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(read)
-	os.Stderr.Write(read)
+	o,_ := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
+	os.Stdout.Write(o)
+
+
 }
 
 func TestMain(*testing.M) {

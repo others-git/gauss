@@ -4,7 +4,6 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"reflect"
 	"strconv"
-	"fmt"
 )
 
 func recursion(
@@ -45,10 +44,7 @@ func recursion(
 	} else if len(parsing.ListStripper(original)) > 1 || len(parsing.ListStripper(modified)) > 1 {
 
 		for k := range original {
-			ObjectDiff = recursion(
-				parsing.Keyvalue{k: original[k]},
-				parsing.Keyvalue{k: modified[k]},
-				path, ObjectDiff)
+			ObjectDiff = recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
 		}
 		return ObjectDiff
 	} else {
@@ -166,6 +162,6 @@ func recursion(
 }
 
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
-	var ObjectDiff = parsing.ConsumableDifference{}
+	var ObjectDiff parsing.ConsumableDifference
 	return recursion(original, modified, path, ObjectDiff)
 }

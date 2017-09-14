@@ -1,46 +1,76 @@
 package parsing
 
 import (
-	/*
-	"encoding/json"
-	"github.com/go-yaml/yaml"
+	"fmt"
+	"io/ioutil"
+	"log"
 
-	"reflect"AT
-	*/
+	"github.com/dimchansky/utfbom"
+	"bytes"
+	"encoding/json"
+
+	"github.com/beard1ess/yaml"
+	"os"
+	"io"
 )
 
-
-
-type readerType struct {}
-
-func (r *readerType) yamlMarshal() interface{} {
-	var placeholder interface{}
-
-	return placeholder
-}
-func (r *readerType) yamlUnmarshal() interface{} {
-	var placeholder interface{}
-
-	return placeholder
+func check(action string, e error) {
+	if e != nil {
+		log.Fatal(action + " ", e)
+	}
 }
 
-func (r *readerType) jsonUnmarshal() interface{} {
-	var placeholder interface{}
+type Gaussian struct {
 
-	return placeholder
-}
-func (r *readerType) jsonMarshal() interface{} {
-	var placeholder interface{}
+	Data Keyvalue // What we read into the struct
+	Type string // Json/Yaml
 
-	return placeholder
 }
 
+func (g *Gaussian) Read(input string) {
+	var kv_store Keyvalue
+	// because go json refuses to deal with bom we need to strip it out
+	f, err := ioutil.ReadFile(input)
+	check(input, err)
 
-func Detector() readerType{
-	var reader readerType
+	o,err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
+	check("Error encountered while trying to skip BOM: ", err)
 
-	return reader
+	// We try to determine if json or yaml based on error :/
+	err = json.Unmarshal(o, &kv_store)
+	if err == nil {
+		g.Data = kv_store
+		g.Type = "JSON"
+	} else {
+		err = yaml.Unmarshal(o, &kv_store)
+		if err == nil {
+			g.Data = kv_store
+			g.Type = "YAML"
+		} else {
+			fmt.Println("Unparseable file type presented")
+			os.Exit(2)
+		}
+	}
 }
 
+// I wrote this and realized it may not be useful
+func (g *Gaussian) Write(output io.Writer) {
 
+	switch g.Type {
+	case "JSON":
 
+		o, err := json.Marshal(g.Data)
+		check("Gaussian marshal error. ", err)
+		output.Write(o)
+
+	case "YAML":
+
+		o, err := yaml.Marshal(g.Data)
+		check("Gaussian marshal error. ", err)
+		output.Write(o)
+
+	default:
+		fmt.Println("Someout TYPE is messed up for Gaussian struct.")
+		os.Exit(9001)
+	}
+}
