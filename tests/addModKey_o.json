@@ -6,17 +6,13 @@
     },
     "EC2": {
       "Type": "Instance",
-      "Size": {"Ref":"size"}
+      "Size": "t2"
     }
   },
   "Outputs": {
     "Default": [
       {"ALB": {"Ref": "Size"}},
-      {"EC2": {"Ref": "Size"}},
-      {"EC2-2": {"Ref": "Size"}},
-      {"EC2-3": {"Ref": "Size"}},
-      {"EC2-4": {"Ref": "Size"}},
-      {"EC2-5": {"Ref": [{"holy":"shit"}]}}
+      {"EC2": {"Ref": "Size"}}
     ]
   }
 }

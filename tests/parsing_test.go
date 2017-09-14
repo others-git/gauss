@@ -1,38 +1,38 @@
 package tests
 
 import (
-	"github.com/jmespath/go-jmespath"
 
-	"encoding/json"
+
+
 	"fmt"
-	"github.com/beard1ess/gauss/parsing"
-	"io/ioutil"
-	"os"
+
+
 	"testing"
+
+	"github.com/dimchansky/utfbom"
+	"io/ioutil"
+	"bytes"
+	"os"
 )
 
 func ExampleParse() {
 
-	var JsonInput interface{}
+	//var JsonInput interface{}
 
-	read, _ := ioutil.ReadFile("./original.json")
 
-	_ = json.Unmarshal(read, &JsonInput)
-	searched, err := jmespath.Search("Resources.ALBListener.Properties.DefaultActions[0]", JsonInput)
+
+	f, err := ioutil.ReadFile("./origin.json")
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
-	out, _ := json.Marshal(searched)
-	os.Stdout.Write(out)
-	fmt.Println()
 
-	t := []string{"g", "h", "i"}
-	res := parsing.PathFormatter(t)
-	fmt.Println(res)
+	o,_ := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
+	os.Stdout.Write(o)
+
 
 }
 
 func TestMain(*testing.M) {
 	ExampleParse()
 }
+

@@ -44,10 +44,7 @@ func recursion(
 	} else if len(parsing.ListStripper(original)) > 1 || len(parsing.ListStripper(modified)) > 1 {
 
 		for k := range original {
-			ObjectDiff = recursion(
-				parsing.Keyvalue{k: original[k]},
-				parsing.Keyvalue{k: modified[k]},
-				path, ObjectDiff)
+			ObjectDiff = recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
 		}
 		return ObjectDiff
 	} else {
@@ -69,27 +66,27 @@ func recursion(
 			if !(reflect.DeepEqual(valMod, valOrig)) {
 				// Specifically handle type mismatch
 				if reflect.TypeOf(valOrig) != reflect.TypeOf(valMod) {
-
 					changed := parsing.ChangedDifference{Path: parsing.PathFormatter(path),
 						Key: k, OldValue: valOrig, NewValue: valMod}
 					ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 					return ObjectDiff
-
+				// Map handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Map {
-
+					// Update the working path
 					path = append(path, k)
 					ObjectDiff = recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, ObjectDiff)
 					return ObjectDiff
-
+				// Slice handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 
 					// Variable setup
 					var match bool
 					valOrig, _ := valOrig.([]interface{})
 					valMod, _ := valMod.([]interface{})
+					// Update the working path and copy into a new var
 					path = append(path, k)
 					npath := make([]string, len(path))
-
+					copy(npath, path)
 					if len(valOrig) != len(valMod) {
 						// If slice length mismatches we need to handle that a particular way
 						if len(valOrig) > len(valMod) {
@@ -116,7 +113,7 @@ func recursion(
 									match = false
 								}
 							}
-							return ObjectDiff
+
 						} else {
 							for i := range valMod {
 								for ii := range valOrig {
@@ -125,8 +122,8 @@ func recursion(
 									} else if i == ii {
 										iter := len(path) - 1
 										path[iter] = path[iter] + "[" + strconv.Itoa(i) + "]"
-										ObjectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),
-											path, ObjectDiff)
+										ObjectDiff = recursion(parsing.Remarshal(valOrig[i]),
+											parsing.Remarshal(valMod[i]), path, ObjectDiff)
 									}
 								}
 								if !(match) {
@@ -138,12 +135,11 @@ func recursion(
 									match = false
 								}
 							}
-							return ObjectDiff
+
 						}
 					} else {
 						// If both slice lengths are equal
 						for i := range valOrig {
-							copy(npath, path)
 							if !(reflect.DeepEqual(valOrig[i], valMod[i])) {
 								iter := len(npath) - 1
 								npath[iter] = npath[iter] + "[" + strconv.Itoa(i) + "]"
@@ -151,21 +147,21 @@ func recursion(
 									npath, ObjectDiff)
 							}
 						}
-						return ObjectDiff
+
 					}
 				} else {
 					changed := parsing.ChangedDifference{Path: parsing.PathFormatter(path),
 						Key: k, OldValue: valOrig, NewValue: valMod}
 					ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
-					return ObjectDiff
+
 				}
 			}
 		}
+		return ObjectDiff
 	}
-	return ObjectDiff
 }
 
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
-	var ObjectDiff = parsing.ConsumableDifference{}
+	var ObjectDiff parsing.ConsumableDifference
 	return recursion(original, modified, path, ObjectDiff)
 }
