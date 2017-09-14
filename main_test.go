@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beard1ess/gauss/parsing"
+	"github.com/beard1ess/gauss/ui"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
-	"github.com/beard1ess/gauss/ui"
 )
 
 func TestDiff(t *testing.T) {

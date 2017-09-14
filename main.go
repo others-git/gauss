@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/beard1ess/gauss/ui"
 	"github.com/urfave/cli"
 	"os"
-	"github.com/beard1ess/gauss/ui"
 )
 
 func main() {
@@ -28,16 +28,16 @@ func main() {
 			Usage:   "Diff json objects",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:        "origin, o",
-					Usage:       "Original `OBJECT` to compare against",
-					Value:       "",
-					EnvVar:      "ORIGINAL_OBJECT",
+					Name:   "origin, o",
+					Usage:  "Original `OBJECT` to compare against",
+					Value:  "",
+					EnvVar: "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name:        "modified, m",
-					Usage:       "Modified `OBJECT` to compare against",
-					Value:       "",
-					EnvVar:      "MODIFIED_OBJECT",
+					Name:   "modified, m",
+					Usage:  "Modified `OBJECT` to compare against",
+					Value:  "",
+					EnvVar: "MODIFIED_OBJECT",
 				},
 				cli.StringFlag{
 					Name:   "output",
@@ -46,9 +46,9 @@ func main() {
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
-					Name:   "in, i",
-					Usage:  "Because some roads you shouldn't go down. Because maps used to say, \"There be dragons here.\" Now they don't. But that don't mean the dragons aren't there.",
-					Value:  "",
+					Name:  "in, i",
+					Usage: "Because some roads you shouldn't go down. Because maps used to say, \"There be dragons here.\" Now they don't. But that don't mean the dragons aren't there.",
+					Value: "",
 				},
 			},
 			Action: func(c *cli.Context) error {

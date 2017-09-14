@@ -5,25 +5,24 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/dimchansky/utfbom"
 	"bytes"
 	"encoding/json"
+	"github.com/dimchansky/utfbom"
 
 	"github.com/beard1ess/yaml"
-	"os"
 	"io"
+	"os"
 )
 
 func check(action string, e error) {
 	if e != nil {
-		log.Fatal(action + " ", e)
+		log.Fatal(action+" ", e)
 	}
 }
 
 type Gaussian struct {
-
 	Data Keyvalue // What we read into the struct
-	Type string // Json/Yaml
+	Type string   // Json/Yaml
 
 }
 
@@ -33,7 +32,7 @@ func (g *Gaussian) Read(input string) {
 	f, err := ioutil.ReadFile(input)
 	check(input, err)
 
-	o,err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
+	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
 	check("Error encountered while trying to skip BOM: ", err)
 
 	// We try to determine if json or yaml based on error :/

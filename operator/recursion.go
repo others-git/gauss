@@ -70,13 +70,13 @@ func recursion(
 						Key: k, OldValue: valOrig, NewValue: valMod}
 					ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 					return ObjectDiff
-				// Map handler
+					// Map handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 					// Update the working path
 					path = append(path, k)
 					ObjectDiff = recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, ObjectDiff)
 					return ObjectDiff
-				// Slice handler
+					// Slice handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 
 					// Variable setup

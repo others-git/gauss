@@ -1,19 +1,19 @@
 package ui
 
 import (
-	"log"
-	"io"
-	"github.com/beard1ess/gauss/parsing"
-	"reflect"
-	"fmt"
-	"os"
-	"github.com/beard1ess/gauss/operator"
 	"encoding/json"
+	"fmt"
+	"github.com/beard1ess/gauss/operator"
+	"github.com/beard1ess/gauss/parsing"
+	"io"
+	"log"
+	"os"
+	"reflect"
 )
 
 func check(action string, e error) {
 	if e != nil {
-		log.Fatal(action + " ", e)
+		log.Fatal(action+" ", e)
 	}
 }
 
@@ -45,18 +45,18 @@ func Diff(
 
 	switch output {
 
-		case "human":
-			//writer.Write(format(objectDiff))
+	case "human":
+		//writer.Write(format(objectDiff))
 
-		case "machine":
-			output, err := json.Marshal(objectDiff)
-			check("sorry. ", err)
+	case "machine":
+		output, err := json.Marshal(objectDiff)
+		check("sorry. ", err)
 
-			writer.Write(output)
+		writer.Write(output)
 
-		default:
-			fmt.Println("Output type unknown.")
-			os.Exit(1)
+	default:
+		fmt.Println("Output type unknown.")
+		os.Exit(1)
 	}
 
 	return nil
