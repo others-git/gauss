@@ -14,10 +14,46 @@ import (
 	"os"
 )
 
+type Keyvalue map[string]interface{}
+type Keyslice map[string][]Keyvalue
+
 func check(action string, e error) {
 	if e != nil {
 		log.Fatal(action+" ", e)
 	}
+}
+
+type RemovedDifference struct {
+	Key   string `json:",omitempty"`
+	Path  string
+	Value interface{}
+}
+
+type AddedDifference struct {
+	Key   string `json:",omitempty"`
+	Path  string
+	Value interface{}
+}
+
+type ChangedDifference struct {
+	Key      string `json:",omitempty"`
+	Path     string
+	NewValue interface{}
+	OldValue interface{}
+}
+
+type IndexDifference struct {
+	NewIndex int
+	OldIndex int
+	Path     string
+	Value	 interface{}
+}
+
+type ConsumableDifference struct {
+	Changed []ChangedDifference `json:",omitempty"`
+	Added   []AddedDifference   `json:",omitempty"`
+	Removed []RemovedDifference `json:",omitempty"`
+	Indexes []IndexDifference `json:",omitempty"`
 }
 
 type Gaussian struct {
