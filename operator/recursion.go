@@ -4,6 +4,7 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"reflect"
 	"strconv"
+	"fmt"
 )
 
 func recursion(
@@ -125,17 +126,20 @@ func recursion(
 										ObjectDiff = recursion(parsing.Remarshal(valOrig[i]),
 											parsing.Remarshal(valMod[i]), path, ObjectDiff)
 									}
-								}
-								if !(match) {
-									added := parsing.AddedDifference{Path: parsing.PathFormatter(path),
-										Key: k, Value: valMod}
-									ObjectDiff.Added = append(ObjectDiff.Added, added)
 
-								} else {
-									match = false
+									if !(match) {
+										fmt.Println("asdf")
+										fmt.Println(i)
+										fmt.Println(path)
+										added := parsing.AddedDifference{Path: parsing.PathFormatter(path),
+											Key:                               k, Value: valMod}
+										ObjectDiff.Added = append(ObjectDiff.Added, added)
+
+									} else {
+										match = false
+									}
 								}
 							}
-
 						}
 					} else {
 						// If both slice lengths are equal
