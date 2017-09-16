@@ -37,7 +37,7 @@ func Diff(
 	json_modified.Read(modified)
 
 	if reflect.DeepEqual(json_original, json_modified) {
-		fmt.Println("No differences!")
+		writer.Write([]byte("No differences!"))
 		os.Exit(0)
 	} else {
 		objectDiff = operator.Recursion(json_original.Data, json_modified.Data, path)
