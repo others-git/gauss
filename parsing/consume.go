@@ -17,33 +17,47 @@ import (
 type Keyvalue map[string]interface{}
 type Keyslice map[string][]Keyvalue
 
+func check(action string, e error) {
+	if e != nil {
+		log.Fatal(action+" ", e)
+	}
+}
+
 type RemovedDifference struct {
-	Key   string
+	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
 }
 
 type AddedDifference struct {
-	Key   string
+	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
 }
 
 type ChangedDifference struct {
-	Key      string
+	Key      string `json:",omitempty"`
 	Path     string
 	NewValue interface{}
 	OldValue interface{}
+}
+
+type IndexDifference struct {
+	NewIndex int
+	OldIndex int
+	Path     string
+	Value	 interface{}
 }
 
 type ConsumableDifference struct {
 	Changed []ChangedDifference `json:",omitempty"`
 	Added   []AddedDifference   `json:",omitempty"`
 	Removed []RemovedDifference `json:",omitempty"`
+	Indexes []IndexDifference `json:",omitempty"`
 }
 
 func (c *ConsumableDifference) Construct(file string) {
-	var kv_store Keyvalue
+	var consume ConsumableDifference
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	check(file, err)
@@ -52,23 +66,15 @@ func (c *ConsumableDifference) Construct(file string) {
 	check("Error encountered while trying to skip BOM: ", err)
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &kv_store)
+	err = json.Unmarshal(o, &consume)
 	if err != nil {
 		fmt.Println(o)
 		log.Fatal(err)
 	}
 
-	for i := range kv_store["Changed"] {
-		fmt.Println(i)
-	}
+	fmt.Println(consume.Added)
 
 
-}
-
-func check(action string, e error) {
-	if e != nil {
-		log.Fatal(action+" ", e)
-	}
 }
 
 type Gaussian struct {
