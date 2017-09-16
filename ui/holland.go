@@ -67,12 +67,15 @@ func Patch(
 
 	patch string,
 	origin string,
-	output, string,
+	output string,
 	writer io.Writer,
 
 
 ) error {
+	var patcher parsing.ConsumableDifference
+	patcher.Construct(patch)
 
+	fmt.Println(patcher.Added[0].Value)
 
 	return nil
 }

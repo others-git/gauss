@@ -57,7 +57,7 @@ type ConsumableDifference struct {
 }
 
 func (c *ConsumableDifference) Construct(file string) {
-	var consume ConsumableDifference
+
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	check(file, err)
@@ -66,13 +66,11 @@ func (c *ConsumableDifference) Construct(file string) {
 	check("Error encountered while trying to skip BOM: ", err)
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &consume)
+	err = json.Unmarshal(o, &c)
 	if err != nil {
 		fmt.Println(o)
 		log.Fatal(err)
 	}
-
-	fmt.Println(consume.Added)
 
 
 }

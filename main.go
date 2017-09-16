@@ -74,7 +74,6 @@ func main() {
 
 			},
 		},
-		/* NOT IMPLEMENTED
 		{
 			Name:    "patch",
 			Aliases: []string{"p"},
@@ -85,21 +84,39 @@ func main() {
 					Name:        "patch, p",
 					Usage:       "`PATCH` the OBJECT",
 					Value:       "",
-					Destination: &patch,
+					EnvVar:      "PATCH_OBJECT",
+
 				},
 				cli.StringFlag{
-					Name:        "object, o",
-					Usage:       "`OBJECT` to PATCH",
+					Name:        "original, o",
+					Usage:       "`ORIGINAL` to PATCH",
 					Value:       "",
-					Destination: &object,
+					EnvVar:      "ORIGINAL_OBJECT",
 				},
 			},
 			Action: func(c *cli.Context) error {
 
-				return nil
+				if c.String("original") == "" {
+					fmt.Print("ORIGIN is required!\n\n")
+					cli.ShowCommandHelp(c, "patch")
+					os.Exit(1)
+				}
+
+				if c.String("patch") == "" {
+					fmt.Print("PATCH is required!\n\n")
+					cli.ShowCommandHelp(c, "patch")
+					os.Exit(1)
+				}
+
+				return ui.Patch(
+					c.String("patch"),
+					c.String("origin"),
+					c.String("output"),
+					os.Stdout,
+				)
+
 			},
 		},
-		*/
 	}
 
 	app.Run(os.Args)
