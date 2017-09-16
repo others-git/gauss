@@ -61,3 +61,18 @@ func Diff(
 
 	return nil
 }
+
+
+func Patch(
+
+	patch string,
+	origin string,
+	output, string,
+	writer io.Writer,
+
+
+) error {
+
+
+	return nil
+}

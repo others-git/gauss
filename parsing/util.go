@@ -5,33 +5,7 @@ import (
 	"log"
 )
 
-type Keyvalue map[string]interface{}
-type Keyslice map[string][]Keyvalue
 
-type RemovedDifference struct {
-	Key   string
-	Path  string
-	Value interface{}
-}
-
-type AddedDifference struct {
-	Key   string
-	Path  string
-	Value interface{}
-}
-
-type ChangedDifference struct {
-	Key      string
-	Path     string
-	NewValue interface{}
-	OldValue interface{}
-}
-
-type ConsumableDifference struct {
-	Changed []ChangedDifference `json:",omitempty"`
-	Added   []AddedDifference   `json:",omitempty"`
-	Removed []RemovedDifference `json:",omitempty"`
-}
 
 func marshError(err error) {
 	if err != nil {
