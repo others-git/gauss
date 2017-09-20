@@ -1,14 +1,14 @@
 {
   "Changed": [{
-    "Key": "Size",
-    "Path": "Resources.EC2",
-    "NewValue": "t2-t",
-    "OldValue": "t2"
-  },{
     "Key": "Ref",
     "Path": "Outputs.Default[0].ALB",
     "NewValue": "Size-diff",
     "OldValue": "Size"
+  }, {
+    "Key": "Size",
+    "Path": "Resources.EC2",
+    "NewValue": "t2-t",
+    "OldValue": "t2"
   }],
   "Added": [{
     "Key": "test",
