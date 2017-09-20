@@ -8,7 +8,6 @@ import (
 	"reflect"
 )
 
-
 func marshError(input interface{}, stage string, err error) {
 	if err != nil {
 		fmt.Println(input)
@@ -93,6 +92,13 @@ func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 		if reflect.DeepEqual(compare, compareSlice[i]) {
 			return true
 		}
+	}
+	return false
+}
+
+func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
+	if reflect.TypeOf(o).Kind() == reflect.Map && reflect.TypeOf(m).Kind() == reflect.Map {
+		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
 	}
 	return false
 }
