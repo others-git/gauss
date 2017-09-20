@@ -100,9 +100,9 @@ func recursion(
 								}
 								if i > len(valMod)-1 && !(parsing.MatchAny(valOrig[i], valMod)) {
 
-									added := parsing.AddedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
-										Value:                             valMod[i]}
-									ObjectDiff.Added = append(ObjectDiff.Added, added)
+									removed := parsing.RemovedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+										Value:                             valOrig[i]}
+									ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
 								}
 							}
 
