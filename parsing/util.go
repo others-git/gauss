@@ -3,39 +3,16 @@ package parsing
 import (
 	"encoding/json"
 	"log"
+	"fmt"
+	"strconv"
+	"reflect"
 )
 
-type Keyvalue map[string]interface{}
-type Keyslice map[string][]Keyvalue
-
-type RemovedDifference struct {
-	Key   string
-	Path  string
-	Value interface{}
-}
-
-type AddedDifference struct {
-	Key   string
-	Path  string
-	Value interface{}
-}
-
-type ChangedDifference struct {
-	Key      string
-	Path     string
-	NewValue interface{}
-	OldValue interface{}
-}
-
-type ConsumableDifference struct {
-	Changed []ChangedDifference `json:",omitempty"`
-	Added   []AddedDifference   `json:",omitempty"`
-	Removed []RemovedDifference `json:",omitempty"`
-}
-
-func marshError(err error) {
+func marshError(input interface{}, stage string, err error) {
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(input)
+		fmt.Println(stage)
+		log.Fatal("Remashalling error! ", err)
 	}
 }
 
@@ -43,13 +20,13 @@ func Remarshal(input interface{}) Keyvalue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back Keyvalue
 	out, e := json.Marshal(input)
-	marshError(e)
+	marshError(input, "Marshal", e)
 	e = json.Unmarshal([]byte(out), &back)
-	marshError(e)
+	marshError(input, "Unmarshal", e)
 	return back
 }
 
-func ListStripper(input Keyvalue) []string {
+func Slicer(input Keyvalue) []string {
 	// Creates an array of key names given a Keyvalue map
 	var r []string
 	for key := range input {
@@ -83,8 +60,8 @@ func IndexOf(inputList []string, inputKey string) int {
 
 func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
 	istanbool := true
-	o_slice := ListStripper(o)
-	m_slice := ListStripper(m)
+	o_slice := Slicer(o)
+	m_slice := Slicer(m)
 	for k := range o_slice {
 		val := IndexOf(m_slice, o_slice[k])
 		if val == -1 {
@@ -99,4 +76,29 @@ func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
 		}
 	}
 	return istanbool
+}
+
+func PathSlice(i int, path []string ) []string {
+
+	npath := make([]string, len(path))
+	copy(npath, path)
+	iter := len(npath) - 1
+	npath[iter] = npath[iter] + "[" + strconv.Itoa(i) + "]"
+	return npath
+}
+
+func MatchAny(compare interface{}, compareSlice []interface{}) bool {
+	for i := range compareSlice {
+		if reflect.DeepEqual(compare, compareSlice[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
+	if reflect.TypeOf(o).Kind() == reflect.Map && reflect.TypeOf(m).Kind() == reflect.Map {
+		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
+	}
+	return false
 }

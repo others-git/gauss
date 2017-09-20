@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beard1ess/gauss/parsing"
+	"github.com/beard1ess/gauss/ui"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -34,6 +35,7 @@ func TestDiff(t *testing.T) {
 		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "machine"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "machine"},
 		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "machine"},
+		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "machine"},
 	}
 
 	/*
@@ -63,7 +65,7 @@ func TestDiff(t *testing.T) {
 				// Execute a Diff against the Origin and Modified test files.
 				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
 
-				diff(
+				ui.Diff(
 					"./tests/"+tc.origin,
 					"./tests/"+tc.modified,
 					tc.output,

@@ -1,4 +1,4 @@
-{
+﻿{
   "Resources": {
     "ALB": {
       "Type": "LoadBalancerv2",
@@ -16,9 +16,7 @@
       {"EC2-2": {"Ref": "Size"}},
       {"EC2-3": {"Ref": "Size"}},
       {"EC2-4": {"Ref": "Size"}},
-      {"EC2-5": {"Ref": [{"FN":"Slice"}]}},
-      "asdf",
-      "asdf"
+      {"EC2-5": {"Ref": [{"holy":"shit"}]}}
     ]
   }
 }

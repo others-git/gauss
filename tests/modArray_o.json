@@ -17,8 +17,7 @@
       {"EC2-3": {"Ref": "Size"}},
       {"EC2-4": {"Ref": "Size"}},
       {"EC2-5": {"Ref": [{"FN":"Slice"}]}},
-      "asdf",
-      "asdf"
+      "NewWorldOrder"
     ]
   }
 }
