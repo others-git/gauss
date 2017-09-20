@@ -1,4 +1,4 @@
-# Gauss ![build](https://travis-ci.org/beard1ess/gauss.svg?branch=dev-me)
+# Gauss ![build](https://travis-ci.org/beard1ess/gauss.svg?branch=master)
 
 ### Json difference and patching tool with some things
 
