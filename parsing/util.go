@@ -95,3 +95,10 @@ func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	}
 	return false
 }
+
+func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
+	if reflect.TypeOf(o).Kind() == reflect.Map && reflect.TypeOf(m).Kind() == reflect.Map {
+		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
+	}
+	return false
+}

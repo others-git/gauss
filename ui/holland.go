@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beard1ess/gauss/operator"
 	"github.com/beard1ess/gauss/parsing"
@@ -49,7 +48,8 @@ func Diff(
 		//writer.Write(format(objectDiff))
 
 	case "machine":
-		output, err := json.Marshal(objectDiff)
+		output, err := objectDiff.MarshalJSON()
+
 		check("sorry. ", err)
 
 		writer.Write(output)
@@ -73,7 +73,7 @@ func Patch(
 
 ) error {
 	var patcher parsing.ConsumableDifference
-	patcher.Construct(patch)
+	patcher.ReadFile(patch)
 
 	fmt.Println(patcher.Added[0].Value)
 
