@@ -1,0 +1,16 @@
+{
+  "Added": [
+    {
+      "Path": "Outputs.Default[5].EC2-5.Ref[1]",
+      "Value": {
+        "Super": "Array"
+      }
+    }
+  ],
+  "Removed": [
+    {
+      "Path": "Outputs.Default[6]",
+      "Value": "NewWorldOrder"
+    }
+  ]
+}
