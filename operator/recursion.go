@@ -72,9 +72,12 @@ func recursion(
 					// Update the working path and copy into a new var
 					path = append(path, k)
 					if len(valOrig) != len(valMod) {
+
 						// If slice length mismatches we need to handle that a particular way
 						if len(valOrig) > len(valMod) {
+
 							for i := range valOrig {
+
 							Mod:
 								for ii := range valMod {
 									if i == ii && reflect.DeepEqual(valOrig[i], valMod[ii]) {
@@ -86,11 +89,16 @@ func recursion(
 											ObjectDiff.Indexes = append(ObjectDiff.Indexes, indexed)
 											break Mod
 										} else if i == ii && !(reflect.DeepEqual(valOrig[i], valMod[ii])) {
-											if reflect.TypeOf(valOrig[i]).Kind() == reflect.String || reflect.TypeOf(valMod[ii]).Kind() == reflect.String {
+
+											if reflect.TypeOf(valOrig[i]).Kind() == reflect.String ||
+												reflect.TypeOf(valMod[ii]).Kind() == reflect.String ||
+												!(parsing.DoMapArrayKeysMatch(valOrig[i], valMod[ii])){
+
 												changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
 													OldValue: valOrig[i], NewValue: valMod[i]}
 												ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 												break Mod
+
 											} else {
 												ObjectDiff = recursion(parsing.Remarshal(valOrig[i]),
 													parsing.Remarshal(valMod[i]), parsing.PathSlice(i, path), ObjectDiff)
