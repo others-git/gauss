@@ -29,14 +29,14 @@ type RemovedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  string
 }
 
 type AddedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  string
 }
 
 type ChangedDifference struct {
@@ -44,15 +44,15 @@ type ChangedDifference struct {
 	Path     string
 	NewValue interface{}
 	OldValue interface{}
-	sort     string `json:"-"`
+	sort     string
 }
 
 type IndexDifference struct {
 	NewIndex int
 	OldIndex int
 	Path     string
-	Value	 interface{}
-	sort     string `json:"-"`
+	Value    interface{}
+	sort     string
 }
 
 type ConsumableDifference struct {
@@ -135,7 +135,7 @@ func (c *ConsumableDifference) Sort() {
 	sort.SliceStable(c.Indexes, func(i, j int) bool { return c.Indexes[i].sort < c.Indexes[j].sort })
 }
 
-func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byte, error) {
+func (c *ConsumableDifference) JSONMarshal(input ...ConsumableDifference) ([]byte, error) {
 	if input != nil {
 		return json.Marshal(input)
 	} else {
@@ -143,8 +143,6 @@ func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byt
 		c.Sort()
 		return json.Marshal(c)
 	}
-
-	return nil, nil
 }
 
 type Gaussian struct {

@@ -27,7 +27,7 @@ func format(input ConsumableDifference) Keyvalue {
 	return return_value
 }
 
-func path_builder(path []string) Keyvalue {
+func pathBuilder(path []string) Keyvalue {
 	var object Keyvalue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")

@@ -10,6 +10,11 @@ import (
 	"reflect"
 )
 
+
+/*
+UI package is for all interfacing and commands we expose
+*/
+
 func check(action string, e error) {
 	if e != nil {
 		log.Fatal(action+" ", e)
@@ -29,8 +34,6 @@ func Diff(
 	var path []string
 	var objectDiff parsing.ConsumableDifference
 
-	/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
-
 	json_original.Read(origin)
 
 	json_modified.Read(modified)
@@ -48,7 +51,7 @@ func Diff(
 		//writer.Write(format(objectDiff))
 
 	case "machine":
-		output, err := objectDiff.MarshalJSON()
+		output, err := objectDiff.JSONMarshal()
 
 		check("sorry. ", err)
 

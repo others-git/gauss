@@ -61,7 +61,7 @@ func TestDiff(t *testing.T) {
 				var expected parsing.ConsumableDifference
 				json.Unmarshal(expectedJson, &expected)
 				require.Nil(err, "The test data should be unmarshaled without error.")
-				// Sort the arrays
+				// sort the arrays
 
 
 				// Execute a Diff against the Origin and Modified test files.
@@ -82,7 +82,7 @@ func TestDiff(t *testing.T) {
 				json.Unmarshal(result, &actual)
 				assert.Nil(err, "The result should be unmarshaled without error.")
 
-				// Sort the arrays
+				// sort the arrays
 				actual.Sort()
 				expected.Sort()
 
