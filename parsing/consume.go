@@ -12,8 +12,8 @@ import (
 	"github.com/beard1ess/yaml"
 	"io"
 	"os"
-	"sort"
 	"reflect"
+	"sort"
 )
 
 type Keyvalue map[string]interface{}
@@ -59,7 +59,7 @@ type ConsumableDifference struct {
 	Changed []ChangedDifference `json:",omitempty"`
 	Added   []AddedDifference   `json:",omitempty"`
 	Removed []RemovedDifference `json:",omitempty"`
-	Indexes []IndexDifference `json:",omitempty"`
+	Indexes []IndexDifference   `json:",omitempty"`
 }
 
 func (c *ConsumableDifference) ReadFile(file string) error {
@@ -71,7 +71,7 @@ func (c *ConsumableDifference) ReadFile(file string) error {
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
 	check("Error encountered while trying to skip BOM: ", err)
 
-	if err := json.Unmarshal(o, &c) ; err != nil {
+	if err := json.Unmarshal(o, &c); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func (c *ConsumableDifference) UnmarshalJSON(input ...interface{}) error {
 
 func forcesertter(input interface{}) string {
 	if reflect.TypeOf(input).Kind() == reflect.Map {
-		out,_ := json.Marshal(input)
+		out, _ := json.Marshal(input)
 		return string(out)
 	}
 	return input.(string)

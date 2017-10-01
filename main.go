@@ -81,17 +81,16 @@ func main() {
 			Flags: []cli.Flag{
 
 				cli.StringFlag{
-					Name:        "patch, p",
-					Usage:       "`PATCH` the OBJECT",
-					Value:       "",
-					EnvVar:      "PATCH_OBJECT",
-
+					Name:   "patch, p",
+					Usage:  "`PATCH` the OBJECT",
+					Value:  "",
+					EnvVar: "PATCH_OBJECT",
 				},
 				cli.StringFlag{
-					Name:        "original, o",
-					Usage:       "`ORIGINAL` to PATCH",
-					Value:       "",
-					EnvVar:      "ORIGINAL_OBJECT",
+					Name:   "original, o",
+					Usage:  "`ORIGINAL` to PATCH",
+					Value:  "",
+					EnvVar: "ORIGINAL_OBJECT",
 				},
 			},
 			Action: func(c *cli.Context) error {

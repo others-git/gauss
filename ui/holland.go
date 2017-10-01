@@ -10,7 +10,6 @@ import (
 	"reflect"
 )
 
-
 /*
 UI package is for all interfacing and commands we expose
 */
@@ -65,14 +64,12 @@ func Diff(
 	return nil
 }
 
-
 func Patch(
 
 	patch string,
 	origin string,
 	output string,
 	writer io.Writer,
-
 
 ) error {
 	var patcher parsing.ConsumableDifference

@@ -63,7 +63,6 @@ func TestDiff(t *testing.T) {
 				require.Nil(err, "The test data should be unmarshaled without error.")
 				// sort the arrays
 
-
 				// Execute a Diff against the Origin and Modified test files.
 				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
 
