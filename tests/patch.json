@@ -1,1 +1,46 @@
-Everything matches
+{
+  "Changed": [{
+    "Path": "Out\\.puts.Default[6]",
+    "NewValue": "asdf",
+    "OldValue": {
+      "EC2-5": {
+        "Ref": [{
+          "FN": "Slice"
+        }]
+      }
+    }
+  }],
+  "Added": [{
+    "Key": "EC2-5",
+    "Path": "Out\\.puts.Default[5]",
+    "Value": {
+      "Ref": [{
+        "FN": "Slice"
+      }]
+    }
+  },
+    {
+      "Path": "Out\\.puts.Default[7]",
+      "Value": "asdf"
+    }
+  ],
+  "Removed": [{
+    "Key": "ALB2",
+    "Path": "Out\\.puts.Default[5]",
+    "Value": {
+      "Ref": "Size"
+    }
+  }],
+  "Indexes": [{
+    "NewIndex": 5,
+    "OldIndex": 6,
+    "Path": "Out\\.puts.Default",
+    "Value": {
+      "EC2-5": {
+        "Ref": [{
+          "FN": "Slice"
+        }]
+      }
+    }
+  }]
+}
