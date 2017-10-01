@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 func marshError(input interface{}, stage string, err error) {
@@ -39,10 +41,13 @@ func Slicer(input Keyvalue) []string {
 func PathFormatter(input []string) string {
 	var r string
 	for i := range input {
+		str := input[i]
+		// Escape a . in string name for parsing later
+		str = strings.Replace(str, ".", "\\.", -1)
 		if i == (len(input) - 1) {
-			r = r + input[i]
+			r = r + str
 		} else {
-			r = r + input[i] + "."
+			r = r + str + "."
 		}
 	}
 	return r
@@ -89,7 +94,6 @@ func SliceIndex(i int, path []string) []string {
 	return nPath
 }
 
-
 func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	for i := range compareSlice {
 		if reflect.DeepEqual(compare, compareSlice[i]) {
@@ -105,4 +109,14 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
 	}
 	return false
+}
+
+// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of PathFormatter?
+func PathSplit(input string) []string {
+	r := regexp.MustCompile(`[^\\]\.`)
+	str := r.Split(input, -1)
+	for i := range str {
+		str[i] = strings.Replace(str[i], "\\.", ".", -1)
+	}
+	return str
 }
