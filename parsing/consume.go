@@ -10,6 +10,7 @@ import (
 	"github.com/dimchansky/utfbom"
 
 	"github.com/beard1ess/yaml"
+	"hash/fnv"
 	"io"
 	"os"
 	"reflect"
@@ -29,14 +30,14 @@ type RemovedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string
+	sort  uint32
 }
 
 type AddedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string
+	sort  uint32
 }
 
 type ChangedDifference struct {
@@ -44,7 +45,7 @@ type ChangedDifference struct {
 	Path     string
 	NewValue interface{}
 	OldValue interface{}
-	sort     string
+	sort     uint32
 }
 
 type IndexDifference struct {
@@ -52,7 +53,7 @@ type IndexDifference struct {
 	OldIndex int
 	Path     string
 	Value    interface{}
-	sort     string
+	sort     uint32
 }
 
 type ConsumableDifference struct {
@@ -95,8 +96,17 @@ func forcesertter(input interface{}) string {
 	if reflect.TypeOf(input).Kind() == reflect.Map {
 		out, _ := json.Marshal(input)
 		return string(out)
+	} else if reflect.TypeOf(input).Kind() == reflect.Slice {
+		out, _ := json.Marshal(input.([]interface{}))
+		return string(out)
 	}
 	return input.(string)
+}
+
+func hash(b []byte) uint32 {
+	h := fnv.New32a()
+	h.Write(b)
+	return h.Sum32()
 }
 
 func (c *ConsumableDifference) Sort() {
@@ -106,20 +116,19 @@ func (c *ConsumableDifference) Sort() {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Changed[i].Path)
 		buffer.WriteString(forcesertter(c.Changed[i].NewValue))
-		buffer.WriteString(forcesertter(c.Changed[i].OldValue))
-		c.Changed[i].sort = buffer.String()
+		c.Changed[i].sort = hash(buffer.Bytes())
 	}
 	for i := range c.Added {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Added[i].Path)
 		buffer.WriteString(forcesertter(c.Added[i].Value))
-		c.Added[i].sort = buffer.String()
+		c.Added[i].sort = hash(buffer.Bytes())
 	}
 	for i := range c.Removed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Removed[i].Path)
 		buffer.WriteString(forcesertter(c.Removed[i].Value))
-		c.Removed[i].sort = buffer.String()
+		c.Removed[i].sort = hash(buffer.Bytes())
 	}
 	for i := range c.Indexes {
 		var buffer bytes.Buffer
@@ -127,7 +136,7 @@ func (c *ConsumableDifference) Sort() {
 		buffer.WriteString(forcesertter(c.Indexes[i].Value))
 		buffer.WriteString(string(c.Indexes[i].NewIndex))
 		buffer.WriteString(string(c.Indexes[i].OldIndex))
-		c.Indexes[i].sort = buffer.String()
+		c.Indexes[i].sort = hash(buffer.Bytes())
 	}
 	sort.SliceStable(c.Changed, func(i, j int) bool { return c.Changed[i].sort < c.Changed[j].sort })
 	sort.SliceStable(c.Added, func(i, j int) bool { return c.Added[i].sort < c.Added[j].sort })
@@ -148,7 +157,6 @@ func (c *ConsumableDifference) JSONMarshal(input ...ConsumableDifference) ([]byt
 type Gaussian struct {
 	Data Keyvalue // What we read into the struct
 	Type string   // Json/Yaml
-
 }
 
 func (g *Gaussian) Read(file string) {
