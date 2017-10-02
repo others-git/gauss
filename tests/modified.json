@@ -6,7 +6,8 @@
     },
     "EC2": {
       "Type": "Instance",
-      "Size": {"Ref":"size"}
+      "Size": {"Ref":"size"},
+      "Description": "Testing is hard"
     }
   },
   "Out.puts": {
@@ -22,3 +23,5 @@
     ]
   }
 }
+
+

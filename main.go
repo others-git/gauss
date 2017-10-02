@@ -109,7 +109,7 @@ func main() {
 
 				return ui.Patch(
 					c.String("patch"),
-					c.String("origin"),
+					c.String("original"),
 					c.String("output"),
 					os.Stdout,
 				)

@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
+    "golang.org/x/text/unicode/rangetable"
 )
 
 func marshError(input interface{}, stage string, err error) {
@@ -111,12 +112,38 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	return false
 }
 
-// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of PathFormatter?
+// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of PathFormatter
 func PathSplit(input string) []string {
-	r := regexp.MustCompile(`[^\\]\.`)
-	str := r.Split(input, -1)
+
+	str := escape(input)
 	for i := range str {
 		str[i] = strings.Replace(str[i], "\\.", ".", -1)
 	}
 	return str
 }
+
+func escape(input string) []string {
+	slashRange := rangetable.New(rune('\\'))
+	dotRange := rangetable.New(rune('.'))
+	old := rune(0)
+	f := func(c rune) bool {
+		switch {
+		case old == rune('\\'):
+			old = rune(0)
+			return false
+		case old != rune(0):
+			return false
+		case unicode.In(c, slashRange):
+			old = c
+			return false
+		default:
+			return  unicode.In(c, dotRange)
+
+		}
+	}
+	return strings.FieldsFunc(input, f)
+
+}
+
+// \ = U+005C
+// . = U+002E

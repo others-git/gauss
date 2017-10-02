@@ -11,6 +11,10 @@
     }
   }],
   "Added": [{
+    "Key": "Description",
+    "Path": "Resources.EC2",
+    "Value": "Testing is hard"
+  },{
     "Key": "EC2-5",
     "Path": "Out\\.puts.Default[5]",
     "Value": {

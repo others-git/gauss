@@ -11,7 +11,7 @@ import (
 )
 
 /*
-UI package is for all interfacing and commands we expose
+ui package is for all interfacing and commands we expose
 */
 
 func check(action string, e error) {
@@ -67,15 +67,46 @@ func Diff(
 func Patch(
 
 	patch string,
-	origin string,
+	original string,
 	output string,
 	writer io.Writer,
 
 ) error {
 	var patcher parsing.ConsumableDifference
-	patcher.ReadFile(patch)
+	var originObject parsing.Gaussian
 
-	fmt.Println(patcher.Added[0].Value)
+	patcher.ReadFile(patch)
+	//parsing.Format(patcher)
+
+	originObject.Read(original)
+
+	operator.Patch(patcher, originObject.Data)
 
 	return nil
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

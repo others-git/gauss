@@ -27,10 +27,13 @@ func format(input ConsumableDifference) Keyvalue {
 	return return_value
 }
 
-func pathBuilder(path []string) Keyvalue {
+func pathBuilder(input string) Keyvalue {
 	var object Keyvalue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")
+
+	path := PathSplit(input)
+
 	//path_length := len(path)
 	for i := range path {
 		if ok, _ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
@@ -42,12 +45,14 @@ func pathBuilder(path []string) Keyvalue {
 	}
 
 	fmt.Println(path)
-	fmt.Println(path)
+	fmt.Println(len(path))
 	return object
 }
 
 func Format(input ConsumableDifference) Keyvalue {
 	var return_value Keyvalue
+
+	pathBuilder(input.Added[0].Path)
 
 	return return_value
 }
