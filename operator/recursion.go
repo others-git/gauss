@@ -10,12 +10,12 @@ func recursion(
 	original parsing.Keyvalue,
 	modified parsing.Keyvalue,
 	path []string,
-	ObjectDiff parsing.ConsumableDifference,
+	ObjectDiff *parsing.ConsumableDifference,
 
-) parsing.ConsumableDifference {
+)  {
 
 	if reflect.DeepEqual(original, modified) {
-		return ObjectDiff
+		return
 	}
 
 	if !(parsing.UnorderedKeyMatch(original, modified)) {
@@ -35,15 +35,15 @@ func recursion(
 			}
 		}
 
-		ObjectDiff = recursion(original, modified, path, ObjectDiff)
-		return ObjectDiff
+		recursion(original, modified, path, ObjectDiff)
+		return
 
 	} else if len(parsing.Slicer(original)) > 1 || len(parsing.Slicer(modified)) > 1 {
 
 		for k := range original {
-			ObjectDiff = recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
+			 recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
 		}
-		return ObjectDiff
+		return
 	} else {
 
 		for k := range original {
@@ -56,13 +56,13 @@ func recursion(
 					changed := parsing.ChangedDifference{Path: parsing.PathFormatter(path),
 						Key: k, OldValue: valOrig, NewValue: valMod}
 					ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
-					return ObjectDiff
+					return
 					// Map handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Map {
 					// Update the working path
 					path = append(path, k)
-					ObjectDiff = recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, ObjectDiff)
-					return ObjectDiff
+					recursion(parsing.Remarshal(valOrig), parsing.Remarshal(valMod), path, ObjectDiff)
+					return
 					// Slice handler
 				} else if reflect.TypeOf(valOrig).Kind() == reflect.Slice {
 
@@ -100,7 +100,8 @@ func recursion(
 												break Mod
 
 											} else {
-												ObjectDiff = recursion(parsing.Remarshal(valOrig[i]),
+
+												recursion(parsing.Remarshal(valOrig[i]),
 													parsing.Remarshal(valMod[i]), parsing.SliceIndex(i, path), ObjectDiff)
 											}
 										}
@@ -133,7 +134,8 @@ func recursion(
 												ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 												break Orig
 											} else {
-												ObjectDiff = recursion(parsing.Remarshal(valOrig[i]),
+
+												recursion(parsing.Remarshal(valOrig[i]),
 													parsing.Remarshal(valMod[i]), parsing.SliceIndex(i, path), ObjectDiff)
 											}
 										}
@@ -158,7 +160,7 @@ func recursion(
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 								} else {
 
-									ObjectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),
+									recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),
 										parsing.SliceIndex(i, path), ObjectDiff)
 								}
 							}
@@ -172,7 +174,7 @@ func recursion(
 				}
 			}
 		}
-		return ObjectDiff
+		return
 	}
 }
 
@@ -181,5 +183,6 @@ Recursion: Given two objects of type 'Keyvalue', return a 'ConsumableDifference'
 */
 func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff parsing.ConsumableDifference
-	return recursion(original, modified, path, ObjectDiff)
+	recursion(original, modified, path, &ObjectDiff)
+	return ObjectDiff
 }
