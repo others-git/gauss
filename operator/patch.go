@@ -35,28 +35,23 @@ func patch(patch parsing.ConsumableDifference, original parsing.Keyvalue) parsin
 
 // Patch: Creates a new object given a 'patch' and 'original'
 func Patch(patch parsing.ConsumableDifference, original parsing.Keyvalue) parsing.Keyvalue {
+//	var modified parsing.Keyvalue
 
-//fmt.Println(original)
-
-//fmt.Println(patch.Added)
-
-    //fmt.Println(parsing.PathSplit(patch.Added[0].Path))
-
-	//fmt.Println(original[parsing.PathSplit(patch.Added[0].Path)[0]])
-
-	var o parsing.Keyvalue
-	o = original
+	o := original
 	path := parsing.PathSplit(patch.Added[0].Path)
 
-	// This actually works lol
-	for p := range path {
 
-		r := o[path[p]]
-		fmt.Println(r)
-		fmt.Println(path[p])
+	// This actually works lol but not really
+	for i := range path {
+
+		r := o[path[i]]
+		//fmt.Println(r)
+		fmt.Println(path[i])
 		o = parsing.Remarshal(r)
 
 	}
+	fmt.Println(original)
+	fmt.Println(o)
 
 
 	return parsing.Keyvalue{}
