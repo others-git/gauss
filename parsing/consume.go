@@ -91,12 +91,19 @@ func (c *ConsumableDifference) UnmarshalJSON(input ...interface{}) error {
 }
 */
 
+
 func forcesertter(input interface{}) string {
 	if reflect.TypeOf(input).Kind() == reflect.Map {
 		out,_ := json.Marshal(input)
 		return string(out)
+	} else if reflect.TypeOf(input).Kind() == reflect.Slice {
+		out,_ := json.Marshal(input)
+		return string(out)
 	}
+
+
 	return input.(string)
+
 }
 
 func (c *ConsumableDifference) Sort() {

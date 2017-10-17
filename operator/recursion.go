@@ -156,6 +156,12 @@ func recursion(
 									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
 										OldValue: valOrig[i], NewValue: valMod[i]}
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
+								} else if reflect.TypeOf(valOrig[i]).Kind() == reflect.Slice || reflect.TypeOf(valMod[i]).Kind() == reflect.Slice {
+
+									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+										OldValue: valOrig[i], NewValue: valMod[i]}
+									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
+
 								} else {
 
 									ObjectDiff = recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),

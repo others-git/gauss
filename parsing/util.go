@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"strconv"
 	"reflect"
+	"runtime/debug"
 )
 
 func marshError(input interface{}, stage string, err error) {
 	if err != nil {
 		fmt.Println(input)
 		fmt.Println(stage)
+		debug.PrintStack()
 		log.Fatal("Remashalling error! ", err)
+
 	}
 }
 
