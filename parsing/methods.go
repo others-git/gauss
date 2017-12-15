@@ -137,7 +137,7 @@ func (c *ConsumableDifference) Sort() error {
 	return nil
 }
 
-// Order and sort difference output for testing consistency
+// MarshalJSON Order and sort difference output for testing consistency
 func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byte, error) {
 	if input != nil {
 		return json.Marshal(input)
