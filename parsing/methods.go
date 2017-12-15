@@ -157,7 +157,7 @@ GAUSSIAN TYPE METHODS
  */
 
 func (g *Gaussian) Read(file string) error {
-	var kv_store Keyvalue
+	var kv_store KeyValue
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	check(file, err)
