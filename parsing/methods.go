@@ -30,7 +30,7 @@ func check(action string, e error) {
 	}
 }
 
-func forcesertter(input interface{}) (string, error) {
+func forceSetter(input interface{}) (string, error) {
 	if reflect.TypeOf(input).Kind() == reflect.Map {
 		out,_ := json.Marshal(input)
 		return string(out), nil
@@ -86,12 +86,12 @@ func (c *ConsumableDifference) Sort() error {
 	for i := range c.Changed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Changed[i].Path)
-		fnv, err := forcesertter(c.Changed[i].NewValue)
+		fnv, err := forceSetter(c.Changed[i].NewValue)
 		if err != nil {
 			return err
 		}
 		buffer.WriteString(fnv)
-		fov, err := forcesertter(c.Changed[i].OldValue)
+		fov, err := forceSetter(c.Changed[i].OldValue)
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,7 @@ func (c *ConsumableDifference) Sort() error {
 	for i := range c.Added {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Added[i].Path)
-		fv, err := forcesertter(c.Added[i].Value)
+		fv, err := forceSetter(c.Added[i].Value)
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func (c *ConsumableDifference) Sort() error {
 	for i := range c.Removed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Removed[i].Path)
-		fv, err := forcesertter(c.Removed[i].Value)
+		fv, err := forceSetter(c.Removed[i].Value)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func (c *ConsumableDifference) Sort() error {
 	for i := range c.Indexes {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Indexes[i].Path)
-		fv, err := forcesertter(c.Indexes[i].Value)
+		fv, err := forceSetter(c.Indexes[i].Value)
 		if err != nil {
 			return err
 		}
@@ -156,8 +156,9 @@ GAUSSIAN TYPE METHODS
 
  */
 
+ // Read gaussian type reader method
 func (g *Gaussian) Read(file string) error {
-	var kv_store KeyValue
+	var kvStore KeyValue
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	check(file, err)
@@ -166,24 +167,24 @@ func (g *Gaussian) Read(file string) error {
 	check("Error encountered while trying to skip BOM: ", err)
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &kv_store)
+	err = json.Unmarshal(o, &kvStore)
 	if err == nil {
-		g.Data = kv_store
+		g.Data = kvStore
 		g.Type = "JSON"
 	} else {
-		err = yaml.Unmarshal(o, &kv_store)
+		err = yaml.Unmarshal(o, &kvStore)
 		if err == nil {
-			g.Data = kv_store
+			g.Data = kvStore
 			g.Type = "YAML"
 		} else {
-			error := errors.New("unable to parse file, confirm if valid JSON/YAML")
-			return error
+			err := errors.New("unable to parse file, confirm if valid JSON/YAML")
+			return err
 		}
 	}
 	return nil
 }
 
-// I wrote this and realized it may not be useful, pass a writer to the function and it will marshal and write out the data
+// Write gaussian type writer method
 func (g *Gaussian) Write(output io.Writer) error {
 
 	switch g.Type {
@@ -200,8 +201,8 @@ func (g *Gaussian) Write(output io.Writer) error {
 		output.Write(o)
 
 	default:
-		error := errors.New("issue marshalling json/yaml to writer")
-		return error
+		err := errors.New("issue marshalling json/yaml to writer")
+		return err
 	}
 	return nil
 }

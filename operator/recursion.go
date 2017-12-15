@@ -176,6 +176,7 @@ func recursion(
 	}
 }
 
+// Recursion wrapper for primary recursion function to find differences
 func Recursion(original parsing.KeyValue, modified parsing.KeyValue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff parsing.ConsumableDifference
 	return recursion(original, modified, path, ObjectDiff)

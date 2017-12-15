@@ -5,6 +5,7 @@ import (
 	"regexp"
 )
 
+// FormattedDiff difference visualized as object
 var FormattedDiff KeySlice
 
 func format(input ConsumableDifference) KeyValue {
@@ -46,6 +47,7 @@ func path_builder(path []string) KeyValue {
 	return object
 }
 
+// Format formatting function
 func Format(input ConsumableDifference) KeyValue {
 	var return_value KeyValue
 
