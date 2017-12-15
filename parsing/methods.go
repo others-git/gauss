@@ -1,9 +1,9 @@
 package parsing
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
+	"errors"
 
 	"bytes"
 	"encoding/json"
@@ -12,13 +12,17 @@ import (
 	"github.com/beard1ess/yaml"
 	"hash/fnv"
 	"io"
-	"os"
-	"reflect"
 	"sort"
+	"reflect"
+	"fmt"
 )
 
-type Keyvalue map[string]interface{}
-type Keyslice map[string][]Keyvalue
+
+/*
+
+GENERAL FUNCTIONS
+
+ */
 
 func check(action string, e error) {
 	if e != nil {
@@ -26,42 +30,32 @@ func check(action string, e error) {
 	}
 }
 
-type RemovedDifference struct {
-	Key   string `json:",omitempty"`
-	Path  string
-	Value interface{}
-	sort  uint32
+func forceSetter(input interface{}) (string, error) {
+	if reflect.TypeOf(input).Kind() == reflect.Map {
+		out,_ := json.Marshal(input)
+		return string(out), nil
+	}
+
+	s, ok := input.(string)
+	if !ok {
+		s := fmt.Sprintf("unable to parse %v of %T as string", input, input)
+		err := errors.New(s)
+		return "", err
+	}
+
+	return s, nil
 }
 
-type AddedDifference struct {
-	Key   string `json:",omitempty"`
-	Path  string
-	Value interface{}
-	sort  uint32
+func hash(b []byte) uint32 {
+	h := fnv.New32a()
+	h.Write(b)
+	return h.Sum32()
 }
 
-type ChangedDifference struct {
-	Key      string `json:",omitempty"`
-	Path     string
-	NewValue interface{}
-	OldValue interface{}
-	sort     uint32
-}
+/*
+CONSUMABLEDIFFERENCE TYPE FUNCTIONS
+ */
 
-type IndexDifference struct {
-	NewIndex int
-	OldIndex int
-	Path     string
-	Value    interface{}
-	sort     uint32
-}
-
-type ConsumableDifference struct {
-	Changed []ChangedDifference `json:",omitempty"`
-	Added   []AddedDifference   `json:",omitempty"`
-	Removed []RemovedDifference `json:",omitempty"`
-	Indexes []IndexDifference   `json:",omitempty"`
-}
 
 func (c *ConsumableDifference) ReadFile(file string) error {
 
@@ -92,48 +86,50 @@ func (c *ConsumableDifference) UnmarshalJSON(input ...interface{}) error {
 }
 */
 
-func forcesertter(input interface{}) string {
-	if reflect.TypeOf(input).Kind() == reflect.Map {
-		out, _ := json.Marshal(input)
-		return string(out)
-	} else if reflect.TypeOf(input).Kind() == reflect.Slice {
-		out, _ := json.Marshal(input.([]interface{}))
-		return string(out)
-	}
-	return input.(string)
-}
-
-func hash(b []byte) uint32 {
-	h := fnv.New32a()
-	h.Write(b)
-	return h.Sum32()
-}
-
-func (c *ConsumableDifference) Sort() {
+// Sort each key in our object so marshaled object is also consistent
+func (c *ConsumableDifference) Sort() error {
 
 	// create 'sortable' string be combining fields that will always be present
 	for i := range c.Changed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Changed[i].Path)
-		buffer.WriteString(forcesertter(c.Changed[i].NewValue))
+		nv, err := forceSetter(c.Changed[i].NewValue)
+		if err != nil {
+			return err
+		}
+		buffer.WriteString(nv)
 		c.Changed[i].sort = hash(buffer.Bytes())
 	}
 	for i := range c.Added {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Added[i].Path)
-		buffer.WriteString(forcesertter(c.Added[i].Value))
+		av,err:= forceSetter(c.Added[i].Value)
+		if err != nil {
+			return err
+		}
+		buffer.WriteString(av)
 		c.Added[i].sort = hash(buffer.Bytes())
+
 	}
 	for i := range c.Removed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Removed[i].Path)
-		buffer.WriteString(forcesertter(c.Removed[i].Value))
+		rv, err := forceSetter(c.Removed[i].Value)
+		if err != nil {
+			return err
+		}
+		buffer.WriteString(rv)
 		c.Removed[i].sort = hash(buffer.Bytes())
+
 	}
 	for i := range c.Indexes {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Indexes[i].Path)
-		buffer.WriteString(forcesertter(c.Indexes[i].Value))
+		iv, err := forceSetter(c.Indexes[i].Value)
+		if err != nil {
+			return err
+		}
+		buffer.WriteString(iv)
 		buffer.WriteString(string(c.Indexes[i].NewIndex))
 		buffer.WriteString(string(c.Indexes[i].OldIndex))
 		c.Indexes[i].sort = hash(buffer.Bytes())
@@ -142,9 +138,12 @@ func (c *ConsumableDifference) Sort() {
 	sort.SliceStable(c.Added, func(i, j int) bool { return c.Added[i].sort < c.Added[j].sort })
 	sort.SliceStable(c.Removed, func(i, j int) bool { return c.Removed[i].sort < c.Removed[j].sort })
 	sort.SliceStable(c.Indexes, func(i, j int) bool { return c.Indexes[i].sort < c.Indexes[j].sort })
+	return nil
 }
 
-func (c *ConsumableDifference) JSONMarshal(input ...ConsumableDifference) ([]byte, error) {
+
+// MarshalJSON Order and sort difference output for testing consistency
+func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byte, error) {
 	if input != nil {
 		return json.Marshal(input)
 	} else {
@@ -154,13 +153,15 @@ func (c *ConsumableDifference) JSONMarshal(input ...ConsumableDifference) ([]byt
 	}
 }
 
-type Gaussian struct {
-	Data Keyvalue // What we read into the struct
-	Type string   // Json/Yaml
-}
+/*
 
-func (g *Gaussian) Read(file string) {
-	var kv_store Keyvalue
+GAUSSIAN TYPE METHODS
+
+ */
+
+ // Read gaussian type reader method
+func (g *Gaussian) Read(file string) error {
+	var kvStore KeyValue
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	check(file, err)
@@ -169,24 +170,25 @@ func (g *Gaussian) Read(file string) {
 	check("Error encountered while trying to skip BOM: ", err)
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &kv_store)
+	err = json.Unmarshal(o, &kvStore)
 	if err == nil {
-		g.Data = kv_store
+		g.Data = kvStore
 		g.Type = "JSON"
 	} else {
-		err = yaml.Unmarshal(o, &kv_store)
+		err = yaml.Unmarshal(o, &kvStore)
 		if err == nil {
-			g.Data = kv_store
+			g.Data = kvStore
 			g.Type = "YAML"
 		} else {
-			fmt.Println("Unparseable file type presented")
-			os.Exit(2)
+			err := errors.New("unable to parse file, confirm if valid JSON/YAML")
+			return err
 		}
 	}
+	return nil
 }
 
-// I wrote this and realized it may not be useful, pass a writer to the function and it will marshal and write out the data
-func (g *Gaussian) Write(output io.Writer) {
+// Write gaussian type writer method
+func (g *Gaussian) Write(output io.Writer) error {
 
 	switch g.Type {
 	case "JSON":
@@ -202,7 +204,8 @@ func (g *Gaussian) Write(output io.Writer) {
 		output.Write(o)
 
 	default:
-		fmt.Println("Somehow TYPE is messed up for Gaussian struct.")
-		os.Exit(9001)
+		err := errors.New("issue marshalling json/yaml to writer")
+		return err
 	}
+	return nil
 }

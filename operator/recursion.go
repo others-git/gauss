@@ -7,8 +7,8 @@ import (
 
 func recursion(
 
-	original parsing.Keyvalue,
-	modified parsing.Keyvalue,
+	original parsing.KeyValue,
+	modified parsing.KeyValue,
 	path []string,
 	ObjectDiff *parsing.ConsumableDifference,
 
@@ -41,7 +41,7 @@ func recursion(
 	} else if len(parsing.Slicer(original)) > 1 || len(parsing.Slicer(modified)) > 1 {
 
 		for k := range original {
-			 recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
+			 recursion(parsing.KeyValue{k: original[k]}, parsing.KeyValue{k: modified[k]}, path, ObjectDiff)
 		}
 		return
 	} else {
@@ -178,10 +178,8 @@ func recursion(
 	}
 }
 
-/*
-Recursion: Given two objects of type 'Keyvalue', return a 'ConsumableDifference' type struct
-*/
-func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
+// Recursion wrapper for primary recursion function to find differences
+func Recursion(original parsing.KeyValue, modified parsing.KeyValue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff parsing.ConsumableDifference
 	recursion(original, modified, path, &ObjectDiff)
 	return ObjectDiff

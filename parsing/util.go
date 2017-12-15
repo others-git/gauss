@@ -9,19 +9,23 @@ import (
 	"strings"
 	"unicode"
     "golang.org/x/text/unicode/rangetable"
+	"runtime/debug"
 )
 
 func marshError(input interface{}, stage string, err error) {
 	if err != nil {
 		fmt.Println(input)
 		fmt.Println(stage)
+		debug.PrintStack()
 		log.Fatal("Remashalling error! ", err)
+
 	}
 }
 
-// Remarshal: Converts an interface back into a Keyvalue type through re-marshalling
-func Remarshal(input interface{}) Keyvalue {
-	var back Keyvalue
+
+func Remarshal(input interface{}) KeyValue {
+	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
+	var back KeyValue
 	out, e := json.Marshal(input)
 	marshError(input, "Marshal", e)
 	e = json.Unmarshal([]byte(out), &back)
@@ -29,8 +33,9 @@ func Remarshal(input interface{}) Keyvalue {
 	return back
 }
 
-// Slicer: Creates an array of key names given a Keyvalue map
-func Slicer(input Keyvalue) []string {
+
+func Slicer(input KeyValue) []string {
+	// Creates an array of key names given a Keyvalue map
 	var r []string
 	for key := range input {
 		r = append(r, key)
@@ -64,8 +69,9 @@ func IndexOf(inputList []string, inputKey string) int {
 	return -1
 }
 
+
 // UnorderedKeyMatch: Returns a bool dependant on all 'keys' in a map matching.
-func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
+func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
 	istanbool := true
 	oSlice := Slicer(o)
 	mSlice := Slicer(m)

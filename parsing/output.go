@@ -5,10 +5,11 @@ import (
 	"regexp"
 )
 
-var FormattedDiff Keyslice
+// FormattedDiff difference visualized as object
+var FormattedDiff KeySlice
 
-func format(input ConsumableDifference) Keyvalue {
-	var return_value Keyvalue
+func format(input ConsumableDifference) KeyValue {
+	var returnValue KeyValue
 
 	FormattedDiff = nil
 	/*
@@ -24,11 +25,12 @@ func format(input ConsumableDifference) Keyvalue {
 		}
 	*/
 
-	return return_value
+	return returnValue
 }
 
-func pathBuilder(input string) Keyvalue {
-	var object Keyvalue
+
+func pathBuilder(input string) KeyValue {
+	var object KeyValue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")
 
@@ -49,10 +51,11 @@ func pathBuilder(input string) Keyvalue {
 	return object
 }
 
-func Format(input ConsumableDifference) Keyvalue {
-	var return_value Keyvalue
+// Format formatting function
+func Format(input ConsumableDifference) KeyValue {
+	var returnValue KeyValue
 
 	pathBuilder(input.Added[0].Path)
 
-	return return_value
+	return returnValue
 }

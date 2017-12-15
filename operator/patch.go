@@ -8,8 +8,8 @@ import (
 
 
 /*
-func Build(input) parsing.Keyvalue {
-	var object parsing.Keyvalue
+func Build(input) parsing.KeyValue {
+	var object parsing.KeyValue
 
 	for i := range input["Changed"] {
 		path_builder(input["Changed"][i]["Path"].([]string))
@@ -27,15 +27,15 @@ func Build(input) parsing.Keyvalue {
 */
 
 
-func patch(patch parsing.ConsumableDifference, original parsing.Keyvalue) parsing.Keyvalue {
+func patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsing.KeyValue {
 
 
-	return parsing.Keyvalue{}
+	return parsing.KeyValue{}
 }
 
 // Patch: Creates a new object given a 'patch' and 'original'
-func Patch(patch parsing.ConsumableDifference, original parsing.Keyvalue) parsing.Keyvalue {
-//	var modified parsing.Keyvalue
+func Patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsing.KeyValue {
+//	var modified parsing.KeyValue
 
 	o := original
 	path := parsing.PathSplit(patch.Added[0].Path)
@@ -54,5 +54,5 @@ func Patch(patch parsing.ConsumableDifference, original parsing.Keyvalue) parsin
 	fmt.Println(o)
 
 
-	return parsing.Keyvalue{}
+	return parsing.KeyValue{}
 }
