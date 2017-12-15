@@ -25,21 +25,23 @@ func Diff(
 
 ) error {
 
-	var json_original, json_modified parsing.Gaussian
+	var jsonOriginal, jsonModified parsing.Gaussian
 	var path []string
 	var objectDiff parsing.ConsumableDifference
 
 	/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
 
-	json_original.Read(origin)
+	if err := jsonOriginal.Read(origin) ; err != nil {
+		return err
+	}
 
-	json_modified.Read(modified)
+	jsonModified.Read(modified)
 
-	if reflect.DeepEqual(json_original, json_modified) {
+	if reflect.DeepEqual(jsonOriginal, jsonModified) {
 		writer.Write([]byte("No differences!"))
 		os.Exit(0)
 	} else {
-		objectDiff = operator.Recursion(json_original.Data, json_modified.Data, path)
+		objectDiff = operator.Recursion(jsonOriginal.Data, jsonModified.Data, path)
 	}
 
 	switch output {
