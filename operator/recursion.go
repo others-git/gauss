@@ -154,8 +154,7 @@ func recursion(
 						for i := range valOrig {
 							if !(reflect.DeepEqual(valOrig[i], valMod[i])) {
 								if reflect.TypeOf(valOrig[i]).Kind() == reflect.String || reflect.TypeOf(valMod[i]).Kind() == reflect.String {
-
-									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
+										changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
 										OldValue: valOrig[i], NewValue: valMod[i]}
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 								} else {
