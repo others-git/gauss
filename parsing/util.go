@@ -19,9 +19,9 @@ func marshError(input interface{}, stage string, err error) {
 	}
 }
 
-func Remarshal(input interface{}) Keyvalue {
+func Remarshal(input interface{}) KeyValue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
-	var back Keyvalue
+	var back KeyValue
 	out, e := json.Marshal(input)
 	marshError(input, "Marshal", e)
 	e = json.Unmarshal([]byte(out), &back)
@@ -29,7 +29,7 @@ func Remarshal(input interface{}) Keyvalue {
 	return back
 }
 
-func Slicer(input Keyvalue) []string {
+func Slicer(input KeyValue) []string {
 	// Creates an array of key names given a Keyvalue map
 	var r []string
 	for key := range input {
@@ -61,7 +61,7 @@ func IndexOf(inputList []string, inputKey string) int {
 	return -1
 }
 
-func UnorderedKeyMatch(o Keyvalue, m Keyvalue) bool {
+func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
 	istanbool := true
 	o_slice := Slicer(o)
 	m_slice := Slicer(m)

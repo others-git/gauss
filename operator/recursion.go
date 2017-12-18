@@ -7,8 +7,8 @@ import (
 
 func recursion(
 
-	original parsing.Keyvalue,
-	modified parsing.Keyvalue,
+	original parsing.KeyValue,
+	modified parsing.KeyValue,
 	path []string,
 	ObjectDiff *parsing.ConsumableDifference,
 
@@ -182,7 +182,8 @@ func recursion(
 	}
 }
 
-func Recursion(original parsing.Keyvalue, modified parsing.Keyvalue, path []string) parsing.ConsumableDifference {
+// Recursion wrapper for primary recursion function to find differences
+func Recursion(original parsing.KeyValue, modified parsing.KeyValue, path []string) parsing.ConsumableDifference {
 	var ObjectDiff parsing.ConsumableDifference
 	recursion(original, modified, path, &ObjectDiff)
 	return ObjectDiff
