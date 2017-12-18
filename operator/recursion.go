@@ -158,8 +158,7 @@ func recursion(
 										OldValue: valOrig[i], NewValue: valMod[i]}
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 								} else if reflect.TypeOf(valOrig[i]).Kind() == reflect.Slice || reflect.TypeOf(valMod[i]).Kind() == reflect.Slice {
-
-									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
 										OldValue: valOrig[i], NewValue: valMod[i]}
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 

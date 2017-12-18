@@ -2,7 +2,6 @@ package parsing
 
 import (
 	"io/ioutil"
-	"log"
 	"errors"
 
 	"bytes"
@@ -23,26 +22,16 @@ import (
 GENERAL FUNCTIONS
 
  */
-
-func check(action string, e error) {
-	if e != nil {
-		log.Fatal(action+" ", e)
-	}
-}
-
 func forceSetter(input interface{}) (string, error) {
 	if reflect.TypeOf(input).Kind() == reflect.Map {
 		out,_ := json.Marshal(input)
 		return string(out), nil
 	}
-
 	s, ok := input.(string)
 	if !ok {
-		s := fmt.Sprintf("unable to parse %v of %T as string", input, input)
-		err := errors.New(s)
+		err := fmt.Errorf("unable to parse %v of type %T as string", input, input)
 		return "", err
 	}
-
 	return s, nil
 }
 
@@ -56,15 +45,21 @@ func hash(b []byte) uint32 {
 CONSUMABLEDIFFERENCE TYPE FUNCTIONS
  */
 
-
-func (c *ConsumableDifference) ReadFile(file string) error {
+// Read helper to read file that handles bom and unmarshals for our patch
+func (c *ConsumableDifference) Read(file string) error {
 
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
-	check(file, err)
+	if err != nil {
+		nErr := fmt.Errorf("error reading file %T: %T", file, err)
+		return nErr
+	}
 
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
-	check("Error encountered while trying to skip BOM: ", err)
+	if err != nil {
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
+		return nErr
+	}
 
 	if err := json.Unmarshal(o, &c); err != nil {
 		return err
@@ -72,20 +67,6 @@ func (c *ConsumableDifference) ReadFile(file string) error {
 
 	return nil
 }
-
-/* UNUSED, MAYBE NOT USEFUL AT ALL, WILL COME BACK TO LATER.
- * PROBABLY NEED THIS TO GIVE INTERFACE TO THE STRUCT FOR PROGRAMS
-func (c *ConsumableDifference) UnmarshalJSON(input ...interface{}) error {
-	if input == nil {
-
-	} else {
-
-	}
-
-	return nil
-}
-*/
-
 
 // Sort each key in our object so marshaled object is also consistent
 func (c *ConsumableDifference) Sort() error {
@@ -142,43 +123,37 @@ func (c *ConsumableDifference) Sort() error {
 	return nil
 }
 
-
-// MarshalJSON Order and sort difference output for testing consistency
-func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byte, error) {
-	if input != nil {
-		return json.Marshal(input)
-	} else {
-		//Since we don't actually care about the ordering of these, and they are slices, order by path to preserve tests
-		c.Sort()
-		return json.Marshal(c)
-	}
-}
-
 /*
 
 GAUSSIAN TYPE METHODS
 
  */
 
- // Read gaussian type reader method
+ // Read gaussian type reader method for raw json or yaml
 func (g *Gaussian) Read(file string) error {
-	var kvStore KeyValue
+	var store interface{}
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
-	check(file, err)
+	if err != nil {
+		nErr := fmt.Errorf("error reading file %T: %T", file, err)
+		return nErr
+	}
 
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
-	check("Error encountered while trying to skip BOM: ", err)
+	if err != nil {
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
+		return nErr
+	}
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &kvStore)
+	err = json.Unmarshal(o, &store)
 	if err == nil {
-		g.Data = kvStore
+		g.Data = store
 		g.Type = "JSON"
 	} else {
-		err = yaml.Unmarshal(o, &kvStore)
+		err = yaml.Unmarshal(o, &store)
 		if err == nil {
-			g.Data = kvStore
+			g.Data = store
 			g.Type = "YAML"
 		} else {
 			err := errors.New("unable to parse file, confirm if valid JSON/YAML")
@@ -188,20 +163,26 @@ func (g *Gaussian) Read(file string) error {
 	return nil
 }
 
-// Write gaussian type writer method
+// Write marshals data based on type and outputs to writer
 func (g *Gaussian) Write(output io.Writer) error {
 
 	switch g.Type {
 	case "JSON":
 
 		o, err := json.Marshal(g.Data)
-		check("Gaussian marshal error. ", err)
+		if err != nil {
+			nErr := fmt.Errorf("error marshalling input: %T", err)
+			return nErr
+		}
 		output.Write(o)
 
 	case "YAML":
 
 		o, err := yaml.Marshal(g.Data)
-		check("Gaussian marshal error. ", err)
+		if err != nil {
+			nErr := fmt.Errorf("error marshalling input: %T", err)
+			return nErr
+		}
 		output.Write(o)
 
 	default:

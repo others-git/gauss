@@ -29,15 +29,18 @@ func TestDiff(t *testing.T) {
 		origin   string
 		modified string
 		diff     string
+		path     string
 		output   string
 	}{
-		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "raw"},
-		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "raw"},
-		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "raw"},
-		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "raw"},
-		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "raw"},
+		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
+		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "", "raw"},
+		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "", "raw"},
+		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "", "raw"},
+		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "", "raw"},
+		{"modDeepKey_o.json", "modDeepKey_m.json", "modPathDeepKey_d.json", "key1.\"key1-1\"", "raw"},
+		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
 	}
-
+//
 	/*
 	 * Test Logic
 	 */
@@ -45,10 +48,11 @@ func TestDiff(t *testing.T) {
 
 		t.Run(
 			fmt.Sprintf(
-				"Origin:%s, Modified:%s, Diff:%s, Output:%s",
+				"Origin:%s, Modified:%s, Diff:%s, Path:%s, Output:%s",
 				tc.origin,
 				tc.modified,
 				tc.diff,
+				tc.path,
 				tc.output,
 			),
 
@@ -70,6 +74,7 @@ func TestDiff(t *testing.T) {
 					"./tests/"+tc.origin,
 					"./tests/"+tc.modified,
 					tc.output,
+					tc.path,
 					testBuffer,
 				)
 
