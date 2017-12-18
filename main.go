@@ -46,6 +46,12 @@ func main() {
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
+					Name:   "diff-path",
+					Usage:  "Preform diff on specific bath, given in jmespath",
+					Value:  "",
+					EnvVar: "DIFF_PATH",
+				},
+				cli.StringFlag{
 					Name:  "in, i",
 					Usage: "Because some roads you shouldn't go down. Because maps used to say, \"There be dragons here.\" Now they don't. But that don't mean the dragons aren't there.",
 					Value: "",
@@ -69,6 +75,7 @@ func main() {
 					c.String("origin"),
 					c.String("modified"),
 					c.String("output"),
+					c.String("diff-path"),
 					os.Stdout,
 				)
 

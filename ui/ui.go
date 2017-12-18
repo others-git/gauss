@@ -25,6 +25,7 @@ func Diff(
 	origin string,
 	modified string,
 	output string,
+	diffPath string,
 	writer io.Writer,
 
 ) error {

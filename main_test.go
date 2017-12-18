@@ -70,6 +70,7 @@ func TestDiff(t *testing.T) {
 					"./tests/"+tc.origin,
 					"./tests/"+tc.modified,
 					tc.output,
+					"",
 					testBuffer,
 				)
 
