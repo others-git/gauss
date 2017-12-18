@@ -45,7 +45,7 @@ func hash(b []byte) uint32 {
 CONSUMABLEDIFFERENCE TYPE FUNCTIONS
  */
 
-// ConsumableDifference.Read helper to read file that handles bom and unmarshals for our patch
+// Read helper to read file that handles bom and unmarshals for our patch
 func (c *ConsumableDifference) Read(file string) error {
 
 	// because go json refuses to deal with bom we need to strip it out
@@ -68,7 +68,7 @@ func (c *ConsumableDifference) Read(file string) error {
 	return nil
 }
 
-// ConsumableDifference.Sort each key in our object so marshaled object is also consistent
+// Sort each key in our object so marshaled object is also consistent
 func (c *ConsumableDifference) Sort() error {
 
 	// create 'sortable' string be combining fields that will always be present
@@ -129,7 +129,7 @@ GAUSSIAN TYPE METHODS
 
  */
 
- // Gaussian.Read gaussian type reader method for raw json or yaml
+ // Read gaussian type reader method for raw json or yaml
 func (g *Gaussian) Read(file string) error {
 	var store interface{}
 	// because go json refuses to deal with bom we need to strip it out
@@ -163,7 +163,7 @@ func (g *Gaussian) Read(file string) error {
 	return nil
 }
 
-// Gaussian.Write marshals data based on type and outputs to writer
+// Write marshals data based on type and outputs to writer
 func (g *Gaussian) Write(output io.Writer) error {
 
 	switch g.Type {
