@@ -29,7 +29,7 @@ func forceSetter(input interface{}) (string, error) {
 	}
 	s, ok := input.(string)
 	if !ok {
-		err := errors.New(fmt.Sprintf("unable to parse %v of type %T as string", input, input))
+		err := fmt.Errorf("unable to parse %v of type %T as string", input, input)
 		return "", err
 	}
 	return s, nil
@@ -51,13 +51,13 @@ func (c *ConsumableDifference) Read(file string) error {
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	if err != nil {
-		nErr := errors.New(fmt.Sprintf("error reading file %T: %T", file, err))
+		nErr := fmt.Errorf("error reading file %T: %T", file, err)
 		return nErr
 	}
 
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
 	if err != nil {
-		nErr := errors.New(fmt.Sprintf("error encountered while trying to skip BOM: %T", err))
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
 		return nErr
 	}
 
@@ -135,13 +135,13 @@ func (g *Gaussian) Read(file string) error {
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
 	if err != nil {
-		nErr := errors.New(fmt.Sprintf("error reading file %T: %T", file, err))
+		nErr := fmt.Errorf("error reading file %T: %T", file, err)
 		return nErr
 	}
 
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
 	if err != nil {
-		nErr := errors.New(fmt.Sprintf("error encountered while trying to skip BOM: %T", err))
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
 		return nErr
 	}
 
@@ -171,7 +171,7 @@ func (g *Gaussian) Write(output io.Writer) error {
 
 		o, err := json.Marshal(g.Data)
 		if err != nil {
-			nErr := errors.New(fmt.Sprintf("error marshalling input: %T", err))
+			nErr := fmt.Errorf("error marshalling input: %T", err)
 			return nErr
 		}
 		output.Write(o)
@@ -180,7 +180,7 @@ func (g *Gaussian) Write(output io.Writer) error {
 
 		o, err := yaml.Marshal(g.Data)
 		if err != nil {
-			nErr := errors.New(fmt.Sprintf("error marshalling input: %T", err))
+			nErr := fmt.Errorf("error marshalling input: %T", err)
 			return nErr
 		}
 		output.Write(o)

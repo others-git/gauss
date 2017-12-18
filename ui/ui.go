@@ -46,7 +46,7 @@ func Diff(
 	if len(inputDiffPath) > 0 {
 		_, err :=  jmespath.Compile(inputDiffPath)
 		if err != nil {
-			nErr := errors.New(fmt.Sprintf("failed to compile provided path: %T", err))
+			nErr := fmt.Errorf("failed to compile provided path: %T", err)
 			return nErr
 		}
 		jsonOriginal.Data,err = jmespath.Search(inputDiffPath, jsonOriginal.Data)
@@ -54,7 +54,7 @@ func Diff(
 			err := errors.New("difference path returned nil object")
 			return err
 		} else if err != nil {
-			nErr := errors.New(fmt.Sprintf("error pathing to object in original: %T", err))
+			nErr := fmt.Errorf("error pathing to object in original: %T", err)
 			return nErr
 		}
 		jsonModified.Data,err = jmespath.Search(inputDiffPath, jsonModified.Data)
@@ -62,7 +62,7 @@ func Diff(
 			err := errors.New("difference path returned nil object")
 			return err
 		} else if err != nil {
-			nErr := errors.New(fmt.Sprintf("error pathing to object in modified: %T", err))
+			nErr := fmt.Errorf("error pathing to object in modified: %T", err)
 			return nErr
 		}
 	}
@@ -92,7 +92,7 @@ func Diff(
 		writer.Write(output)
 
 	default:
-		err := errors.New(fmt.Sprintf("output type unknown: %T", output))
+		err := fmt.Errorf("output type unknown: %T", output)
 		return err
 	}
 
