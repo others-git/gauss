@@ -20,7 +20,6 @@ func main() {
 			Usage: "just taking up space",
 		},
 	}
-
 	app.Commands = []cli.Command{
 		{
 			Name:    "diff",
@@ -78,8 +77,9 @@ func main() {
 					c.String("diff-path"),
 					os.Stdout,
 				)
-
 			},
+
+
 		},
 		{
 			Name:    "patch",
@@ -125,6 +125,9 @@ func main() {
 		},
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 }
