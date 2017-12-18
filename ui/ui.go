@@ -51,10 +51,10 @@ func Diff(
 
 	switch output {
 
-	case "human":
+	case "formatted":
 		//writer.Write(format(objectDiff))
 
-	case "machine":
+	case "raw":
 		output, err := objectDiff.MarshalJSON()
 
 		check("sorry. ", err)

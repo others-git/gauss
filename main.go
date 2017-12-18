@@ -41,8 +41,8 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:   "output",
-					Usage:  "Output types available: human, machine",
-					Value:  "machine",
+					Usage:  "Output types available: formatted, raw",
+					Value:  "raw",
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
