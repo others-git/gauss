@@ -10,6 +10,10 @@ import (
 	"reflect"
 )
 
+/*
+ui package is for all interfacing and commands we expose
+*/
+
 func check(action string, e error) {
 	if e != nil {
 		log.Fatal(action+" ", e)
@@ -35,6 +39,7 @@ func Diff(
 		return err
 	}
 
+
 	jsonModified.Read(modified)
 
 	if reflect.DeepEqual(jsonOriginal, jsonModified) {
@@ -46,10 +51,10 @@ func Diff(
 
 	switch output {
 
-	case "human":
+	case "formatted":
 		//writer.Write(format(objectDiff))
 
-	case "machine":
+	case "raw":
 		output, err := objectDiff.MarshalJSON()
 
 		check("sorry. ", err)
@@ -64,20 +69,49 @@ func Diff(
 	return nil
 }
 
-
 func Patch(
 
 	patch string,
-	origin string,
+	original string,
 	output string,
 	writer io.Writer,
 
-
 ) error {
 	var patcher parsing.ConsumableDifference
-	patcher.ReadFile(patch)
+	var originObject parsing.Gaussian
 
-	fmt.Println(patcher.Added[0].Value)
+	patcher.ReadFile(patch)
+	//parsing.Format(patcher)
+
+	originObject.Read(original)
+
+	operator.Patch(patcher, originObject.Data)
 
 	return nil
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -41,8 +41,8 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:   "output",
-					Usage:  "Output types available: human, machine",
-					Value:  "machine",
+					Usage:  "Output types available: formatted, raw",
+					Value:  "raw",
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
@@ -81,17 +81,16 @@ func main() {
 			Flags: []cli.Flag{
 
 				cli.StringFlag{
-					Name:        "patch, p",
-					Usage:       "`PATCH` the OBJECT",
-					Value:       "",
-					EnvVar:      "PATCH_OBJECT",
-
+					Name:   "patch, p",
+					Usage:  "`PATCH` the OBJECT",
+					Value:  "",
+					EnvVar: "PATCH_OBJECT",
 				},
 				cli.StringFlag{
-					Name:        "original, o",
-					Usage:       "`ORIGINAL` to PATCH",
-					Value:       "",
-					EnvVar:      "ORIGINAL_OBJECT",
+					Name:   "original, o",
+					Usage:  "`ORIGINAL` to PATCH",
+					Value:  "",
+					EnvVar: "ORIGINAL_OBJECT",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -110,7 +109,7 @@ func main() {
 
 				return ui.Patch(
 					c.String("patch"),
-					c.String("origin"),
+					c.String("original"),
 					c.String("output"),
 					os.Stdout,
 				)

@@ -10,8 +10,8 @@ import (
 	"github.com/dimchansky/utfbom"
 
 	"github.com/beard1ess/yaml"
+	"hash/fnv"
 	"io"
-
 	"sort"
 	"reflect"
 	"fmt"
@@ -46,9 +46,16 @@ func forceSetter(input interface{}) (string, error) {
 	return s, nil
 }
 
+func hash(b []byte) uint32 {
+	h := fnv.New32a()
+	h.Write(b)
+	return h.Sum32()
+}
+
 /*
 CONSUMABLEDIFFERENCE TYPE FUNCTIONS
  */
+
 
 func (c *ConsumableDifference) ReadFile(file string) error {
 
@@ -59,7 +66,7 @@ func (c *ConsumableDifference) ReadFile(file string) error {
 	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(f)))
 	check("Error encountered while trying to skip BOM: ", err)
 
-	if err := json.Unmarshal(o, &c) ; err != nil {
+	if err := json.Unmarshal(o, &c); err != nil {
 		return err
 	}
 
@@ -87,49 +94,46 @@ func (c *ConsumableDifference) Sort() error {
 	for i := range c.Changed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Changed[i].Path)
-		fnv, err := forceSetter(c.Changed[i].NewValue)
+		nv, err := forceSetter(c.Changed[i].NewValue)
 		if err != nil {
 			return err
 		}
-		buffer.WriteString(fnv)
-		fov, err := forceSetter(c.Changed[i].OldValue)
-		if err != nil {
-			return err
-		}
-		buffer.WriteString(fov)
-		c.Changed[i].sort = buffer.String()
+		buffer.WriteString(nv)
+		c.Changed[i].sort = hash(buffer.Bytes())
 	}
 	for i := range c.Added {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Added[i].Path)
-		fv, err := forceSetter(c.Added[i].Value)
+		av,err:= forceSetter(c.Added[i].Value)
 		if err != nil {
 			return err
 		}
-		buffer.WriteString(fv)
-		c.Added[i].sort = buffer.String()
+		buffer.WriteString(av)
+		c.Added[i].sort = hash(buffer.Bytes())
+
 	}
 	for i := range c.Removed {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Removed[i].Path)
-		fv, err := forceSetter(c.Removed[i].Value)
+		rv, err := forceSetter(c.Removed[i].Value)
 		if err != nil {
 			return err
 		}
-		buffer.WriteString(fv)
-		c.Removed[i].sort = buffer.String()
+		buffer.WriteString(rv)
+		c.Removed[i].sort = hash(buffer.Bytes())
+
 	}
 	for i := range c.Indexes {
 		var buffer bytes.Buffer
 		buffer.WriteString(c.Indexes[i].Path)
-		fv, err := forceSetter(c.Indexes[i].Value)
+		iv, err := forceSetter(c.Indexes[i].Value)
 		if err != nil {
 			return err
 		}
-		buffer.WriteString(fv)
+		buffer.WriteString(iv)
 		buffer.WriteString(string(c.Indexes[i].NewIndex))
 		buffer.WriteString(string(c.Indexes[i].OldIndex))
-		c.Indexes[i].sort = buffer.String()
+		c.Indexes[i].sort = hash(buffer.Bytes())
 	}
 	sort.SliceStable(c.Changed, func(i, j int) bool { return c.Changed[i].sort < c.Changed[j].sort })
 	sort.SliceStable(c.Added, func(i, j int) bool { return c.Added[i].sort < c.Added[j].sort })
@@ -137,6 +141,7 @@ func (c *ConsumableDifference) Sort() error {
 	sort.SliceStable(c.Indexes, func(i, j int) bool { return c.Indexes[i].sort < c.Indexes[j].sort })
 	return nil
 }
+
 
 // MarshalJSON Order and sort difference output for testing consistency
 func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byte, error) {
@@ -147,8 +152,6 @@ func (c *ConsumableDifference) MarshalJSON(input ...ConsumableDifference) ([]byt
 		c.Sort()
 		return json.Marshal(c)
 	}
-
-	return nil, nil
 }
 
 /*

@@ -19,7 +19,7 @@ type RemovedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  uint32 `json:"-"`
 }
 
 // AddedDifference added items from the object
@@ -27,7 +27,7 @@ type AddedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  uint32 `json:"-"`
 }
 
 // ChangedDifference changed items from the object
@@ -36,7 +36,7 @@ type ChangedDifference struct {
 	Path     string
 	NewValue interface{}
 	OldValue interface{}
-	sort     string `json:"-"`
+	sort     uint32 `json:"-"`
 }
 
 // IndexDifference try to determine when array items only change index
@@ -45,7 +45,7 @@ type IndexDifference struct {
 	OldIndex int
 	Path     string
 	Value	 interface{}
-	sort     string `json:"-"`
+	sort     uint32 `json:"-"`
 }
 
 // ConsumableDifference eventual return object

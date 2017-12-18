@@ -41,7 +41,7 @@ func recursion(
 	} else if len(parsing.Slicer(original)) > 1 || len(parsing.Slicer(modified)) > 1 {
 
 		for k := range original {
-			 recursion(parsing.Keyvalue{k: original[k]}, parsing.Keyvalue{k: modified[k]}, path, ObjectDiff)
+			 recursion(parsing.KeyValue{k: original[k]}, parsing.KeyValue{k: modified[k]}, path, ObjectDiff)
 		}
 		return
 	} else {
@@ -92,24 +92,25 @@ func recursion(
 
 											if reflect.TypeOf(valOrig[i]).Kind() == reflect.String ||
 												reflect.TypeOf(valMod[ii]).Kind() == reflect.String ||
-												!(parsing.DoMapArrayKeysMatch(valOrig[i], valMod[ii])){
+												!(parsing.DoMapArrayKeysMatch(valOrig[i], valMod[ii])) {
 
-												changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+												changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
 													OldValue: valOrig[i], NewValue: valMod[i]}
 												ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 												break Mod
 
 											} else {
+
 												recursion(parsing.Remarshal(valOrig[i]),
-													parsing.Remarshal(valMod[i]), parsing.PathSlice(i, path), ObjectDiff)
+													parsing.Remarshal(valMod[i]), parsing.SliceIndex(i, path), ObjectDiff)
 											}
 										}
 									}
 								}
 								if i > len(valMod)-1 && !(parsing.MatchAny(valOrig[i], valMod)) {
 
-									removed := parsing.RemovedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
-										Value:                             valOrig[i]}
+									removed := parsing.RemovedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
+										Value: valOrig[i]}
 									ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
 								}
 							}
@@ -128,21 +129,22 @@ func recursion(
 											break Orig
 										} else if i == ii && !(reflect.DeepEqual(valOrig[ii], valMod[i])) {
 											if reflect.TypeOf(valOrig[ii]).Kind() == reflect.String || reflect.TypeOf(valMod[i]).Kind() == reflect.String {
-												changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+												changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
 													OldValue: valOrig[i], NewValue: valMod[i]}
 												ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 												break Orig
 											} else {
+
 												recursion(parsing.Remarshal(valOrig[i]),
-													parsing.Remarshal(valMod[i]), parsing.PathSlice(i, path), ObjectDiff)
+													parsing.Remarshal(valMod[i]), parsing.SliceIndex(i, path), ObjectDiff)
 											}
 										}
 									}
 								}
 								if i > len(valOrig)-1 && !(parsing.MatchAny(valMod[i], valOrig)) {
 
-									added := parsing.AddedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
-										Value:                             valMod[i]}
+									added := parsing.AddedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
+										Value: valMod[i]}
 									ObjectDiff.Added = append(ObjectDiff.Added, added)
 								}
 							}
@@ -153,7 +155,7 @@ func recursion(
 							if !(reflect.DeepEqual(valOrig[i], valMod[i])) {
 								if reflect.TypeOf(valOrig[i]).Kind() == reflect.String || reflect.TypeOf(valMod[i]).Kind() == reflect.String {
 
-									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.PathSlice(i, path)),
+									changed := parsing.ChangedDifference{Path: parsing.PathFormatter(parsing.SliceIndex(i, path)),
 										OldValue: valOrig[i], NewValue: valMod[i]}
 									ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 								} else if reflect.TypeOf(valOrig[i]).Kind() == reflect.Slice || reflect.TypeOf(valMod[i]).Kind() == reflect.Slice {
@@ -165,7 +167,7 @@ func recursion(
 								} else {
 
 									recursion(parsing.Remarshal(valOrig[i]), parsing.Remarshal(valMod[i]),
-										parsing.PathSlice(i, path), ObjectDiff)
+										parsing.SliceIndex(i, path), ObjectDiff)
 								}
 							}
 						}

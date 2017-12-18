@@ -31,11 +31,11 @@ func TestDiff(t *testing.T) {
 		diff     string
 		output   string
 	}{
-		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "machine"},
-		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "machine"},
-		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "machine"},
-		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "machine"},
-		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "machine"},
+		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "raw"},
+		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "raw"},
+		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "raw"},
+		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "raw"},
+		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "raw"},
 	}
 
 	/*
@@ -61,8 +61,7 @@ func TestDiff(t *testing.T) {
 				var expected parsing.ConsumableDifference
 				json.Unmarshal(expectedJson, &expected)
 				require.Nil(err, "The test data should be unmarshaled without error.")
-				// Sort the arrays
-
+				// sort the arrays
 
 				// Execute a Diff against the Origin and Modified test files.
 				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
@@ -82,7 +81,7 @@ func TestDiff(t *testing.T) {
 				json.Unmarshal(result, &actual)
 				assert.Nil(err, "The result should be unmarshaled without error.")
 
-				// Sort the arrays
+				// sort the arrays
 				actual.Sort()
 				expected.Sort()
 
