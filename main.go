@@ -99,6 +99,12 @@ func main() {
 					Value:  "",
 					EnvVar: "ORIGINAL_OBJECT",
 				},
+				cli.StringFlag{
+					Name:   "skip-keys, s",
+					Usage:  "`ORIGINAL` to PATCH",
+					Value:  "",
+					EnvVar: "SKIP_KEYS",
+				},
 			},
 			Action: func(c *cli.Context) error {
 
@@ -118,6 +124,7 @@ func main() {
 					c.String("patch"),
 					c.String("original"),
 					c.String("output"),
+					c.String("skip-keys"),
 					os.Stdout,
 				)
 

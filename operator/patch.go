@@ -3,28 +3,9 @@ package operator
 import (
 	"github.com/beard1ess/gauss/parsing"
 	"fmt"
+	"github.com/jmespath/go-jmespath"
 )
 
-
-
-/*
-func Build(input) parsing.KeyValue {
-	var object parsing.KeyValue
-
-	for i := range input["Changed"] {
-		path_builder(input["Changed"][i]["Path"].([]string))
-	}
-	for i := range input["Added"] {
-		path_builder(input["Added"][i]["Path"].([]string))
-	}
-	for i := range input["Removed"] {
-		path_builder(input["Removed"][i]["Path"].([]string))
-
-	}
-
-	return object
-}
-*/
 
 
 func patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsing.KeyValue {
@@ -35,24 +16,13 @@ func patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsin
 
 // Patch: Creates a new object given a 'patch' and 'original'
 func Patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsing.KeyValue {
-//	var modified parsing.KeyValue
 
-	o := original
-	path := parsing.PathSplit(patch.Added[0].Path)
-
-
-	// This actually works lol but not really
-	for i := range path {
-
-		r := o[path[i]]
-		//fmt.Println(r)
-		fmt.Println(path[i])
-		o = parsing.Remarshal(r)
+	for _, i := range patch.Added {
+		fmt.Println(i.Path)
+		res, _ := jmespath.Search(i.Path, original)
+		fmt.Println(res)
 
 	}
-	fmt.Println(original)
-	fmt.Println(o)
-
 
 	return parsing.KeyValue{}
 }

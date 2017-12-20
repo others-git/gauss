@@ -105,6 +105,7 @@ func Patch(
 	patch string,
 	original string,
 	output string,
+	skipKeys string,
 	writer io.Writer,
 
 ) error {
@@ -117,6 +118,28 @@ func Patch(
 	originObject.Read(original)
 
 	operator.Patch(patcher, originObject.Data.(map[string]interface{}))
+
+	/*
+	switch output {
+
+	case "formatted":
+		//writer.Write(format(objectDiff))
+
+	case "raw":
+
+		objectDiff.Sort()
+		output, err := json.Marshal(objectDiff)
+		if err != nil {
+			return err
+		}
+
+		writer.Write(output)
+
+	default:
+		err := fmt.Errorf("output type unknown: %T", output)
+		return err
+	}
+	*/
 
 	return nil
 }

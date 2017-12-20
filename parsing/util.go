@@ -43,18 +43,40 @@ func Slicer(input KeyValue) []string {
 	return r
 }
 
-// PathFormatter: Given an array, construct it into a jmespath expression (string with . separator)
+// PathFormatter: Given an array, construct it into a jmespath expression
 func PathFormatter(input []string) string {
+	/* ?
+		escape (
+		%x20-2F /    ; Space,!,",#,$,%,&,',(,),*,+,comma,-,.,/
+		%x3A-40 /    ; :,;,<,=,>,?,@
+		%x5B    /    ; Left bracket: [
+		%x5C    /    ; Back slash: \
+		%x5D    /    ; Right bracket: ]
+		%x5E    /    ; Caret: ^
+		%x60    /    ; Backtick: `
+		%x7B-7E /    ; {,|,},~
+		b       /    ; backspace
+		n       /    ; new line
+		f       /    ; form feed
+		r       /    ; carriage return
+		t       )    ; tab
+	 */
+	 escapeChars := ".-"
 	var r string
-	for i := range input {
-		str := input[i]
+	for i,str := range input {
+
 		// Escape a . in string name for parsing later
-		str = strings.Replace(str, ".", "\\.", -1)
+		if strings.ContainsAny(str, escapeChars) {
+			str = "\"" + str + "\""
+		}
+		//str = strings.Replace(str, ".", "%x2E", -1)
+
 		if i == (len(input) - 1) {
 			r = r + str
 		} else {
 			r = r + str + "."
 		}
+
 	}
 	return r
 }
