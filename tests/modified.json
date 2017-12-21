@@ -24,4 +24,54 @@
   }
 }
 
-
+{
+  "Out.puts": {
+    "Default": [
+      {"ALB": {"Ref": "Size"}}, {
+      "EC2": {
+        "Ref": "Size"
+      }
+    }, {
+      "EC2-2": {
+        "Ref": "Size"
+      }
+    }, {
+      "EC2-3": {
+        "Ref": "Size"
+      }
+    }, {
+      "EC2-4": {
+        "Ref": "Size"
+      }
+    }, {
+      "EC2-5": {
+        "Ref": [{
+          "FN": "Slice"
+        }]
+      }
+    }, {
+      "ALB2": {
+        "Ref": "Size"
+      }
+    }, {
+      "EC2-5": {
+        "Ref": [{
+          "FN": "Slice"
+        }]
+      }
+    }, "asdf"]
+  },
+  "Resources": {
+    "ALB": {
+      "Size": "Max",
+      "Type": "LoadBalancerv2"
+    },
+    "EC2": {
+      "Description": "Testing is hard",
+      "Size": {
+        "Ref": "size"
+      },
+      "Type": "Instance"
+    }
+  }
+}

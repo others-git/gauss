@@ -4,10 +4,10 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"fmt"
 	"github.com/jmespath/go-jmespath"
-	"encoding/json"
 	"regexp"
 	"strconv"
 	"reflect"
+	"encoding/json"
 )
 
 // https://github.com/golang/go/wiki/SliceTricks
@@ -20,7 +20,7 @@ func patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsin
 
 // Patch: Creates a new object given a 'patch' and 'original'
 func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*interface{}, error) {
-	originalObject := original.Data
+	originalObject := &original.Data
 
 	var newObject interface{}
 	// Updated order Index > Changed > Removed > Added
@@ -44,23 +44,23 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 		slicedPath := parsing.PathSplit(originPath)
 
 		// create child object
-		childObject, err := createChild(slicedPath, key, value, originalObject)
+		childObject, err := createChild(slicedPath, key, value, *originalObject)
 		if err != nil {
 			return nil, err
 		}
 
-		fmt.Println(*childObject)
-
 		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, childObject, originalObject)
+		newObject, err = addParent(slicedPath, *childObject, *originalObject)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		// testing so break
-		break
+
 	}
 
+	res, _ := json.Marshal(newObject)
+	fmt.Println(string(res))
 	return &newObject, nil
 }
 
@@ -78,21 +78,32 @@ func createChild(path []string, key string, value interface{}, object interface{
 	// get working directory based on path
 	objectDir,err := jmespath.Search(*stringPath, object)
 	if err != nil {
-		fmt.Println(*stringPath)
 		return nil, err
 	}
-
-	// determine what type of object we need to make
+	// determine what type of object we need to make - NEED MORE CHECKS
 	if key != "" {
-		newObject = map[string]interface{}{
+		// create k[v] type and return
+		newChild := map[string]interface{}{
 			key: value,
 		}
+		// reduce maps
+		fmt.Println(objectDir)
+		fmt.Println(path)
+		fmt.Println(key)
+		fmt.Println(value)
+		if reflect.TypeOf(objectDir).Kind() == reflect.Map {
+			newObject = mapReduce(objectDir.(map[string]interface{}), newChild)
+		} else {
+			newObject = newChild
+		}
+
 	} else {
+
 		newObject = value
 	}
 
-	// Update logic for slice value
-	if index != nil && reflect.TypeOf(objectDir).Kind() == reflect.Slice {
+	// Update logic for slice value - NEED MORE CHECKS
+	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
 		//TODO: do thing with index
 		// cast to slice of interfaces
 		objectSlice := objectDir.([]interface{})
@@ -104,42 +115,45 @@ func createChild(path []string, key string, value interface{}, object interface{
 		newObject = objectSlice
 	}
 
-
-
 	return &newObject, nil
 }
 
 // recreate the template with the updated child object
 func addParent(path []string, child interface{}, object interface{}) (*interface{}, error) {
-	// kv type we'll unmarshal to
+	var objectDir interface{}
 
-	if len(path) > 0 {
-		var kv map[string]interface{}
+	// adjust path
+	objectName := path[len(path)-1]
+	lessPath := path[:len(path)-1]
+	pathLen := len(path)-1
 
-		// check path for index
-		_, stringPath, err := makePath(path)
+	if pathLen > 0 {
+		// get string path
+		_, stringPath, err := makePath(lessPath)
 		if err != nil {
 			return nil, err
 		}
 
 		// get working directory based on path
-		objectDir,err := jmespath.Search(*stringPath, object)
+		objectDir, err = jmespath.Search(*stringPath, object)
 		if err != nil {
-			return nil, err
+			nErr := fmt.Errorf("invalid jmespath expression: %q", *stringPath)
+			fmt.Println(objectName)
+			fmt.Println(lessPath)
+			fmt.Println(pathLen)
+			return nil, nErr
 		}
-
-		// marshal out to json
-		rawObj, err := json.Marshal(objectDir)
-		if err != nil {
-			return nil, err
-		}
-		json.Unmarshal(rawObj, kv)
-		fmt.Println(child)
-		fmt.Println(string(rawObj))
-
+	} else {
+		objectDir = object
 	}
 
-	return &object, nil
+	//tmpObject := make(map[string]interface{})
+	objectDir.(map[string]interface{})[objectName] = child
+
+	if pathLen > 0 {
+		return addParent(lessPath, objectDir, object)
+	}
+	return &objectDir, nil
 }
 
 
@@ -147,9 +161,13 @@ func addParent(path []string, child interface{}, object interface{}) (*interface
 // strips off index for last object to properly handle slices
 func makePath(path []string) (*int, *string, error) {
 
-
+	if len(path) == 0 {
+		null := ""
+		return nil, &null, nil
+	}
 	location := &path[len(path)-1]
-
+	// remove any escaped quotes \"
+	*location = regexp.MustCompile("\\\"").ReplaceAllString(*location, "")
 	// compile regex to check for index in path
 	index := regexp.MustCompile("^.*\\[[\\d]+\\]$")
 
@@ -179,6 +197,12 @@ func makePath(path []string) (*int, *string, error) {
 }
 
 
+func mapReduce(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
+	for k, v := range b {
+		a[k] = v
+	}
+	return a
+}
 
 
 
