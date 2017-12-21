@@ -117,7 +117,7 @@ func Patch(
 
 	originObject.Read(original)
 
-	operator.Patch(patcher, originObject.Data.(map[string]interface{}))
+	operator.Patch(&patcher, &originObject)
 
 	/*
 	switch output {

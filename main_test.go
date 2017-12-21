@@ -117,17 +117,18 @@ func TestDiff(t *testing.T) {
 	}
 }
 
+/*
 func TestPatch(t *testing.T) {
 
-	/*
-	 * Create instances of test helper objects
-	 */
+
+	 // Create instances of test helper objects
+
 	assert := assert.New(t)
 	require := require.New(t)
 
-	/*
-	 * Test Cases
-	 */
+
+	 // Test Cases
+
 	testCases := []struct {
 		origin   string
 		modified string
@@ -144,9 +145,9 @@ func TestPatch(t *testing.T) {
 		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
 	}
 	//
-	/*
-	 * Test Logic
-	 */
+
+	 // Test Logic
+
 	for _, tc := range testCases {
 
 		t.Run(
@@ -181,21 +182,21 @@ func TestPatch(t *testing.T) {
 					testBuffer,
 				)
 
-				/*
+
 					patch string,
 	original string,
 	output string,
 	skipKeys string,
 	writer io.Writer,
 
-				 */
+
 
 				// Read and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
 				require.Nil(err, "The test buffer should be readable")
 
 				var actual parsing.ConsumableDifference
-				json.Unmarshal(result, &actual)
+                json.Unmarshal(result, &actual)
 				assert.Nil(err, "The result should be unmarshaled without error.")
 
 				// sort the arrays
@@ -228,3 +229,4 @@ func TestPatch(t *testing.T) {
 		)
 	}
 }
+*/

@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-    "golang.org/x/text/unicode/rangetable"
 	"runtime/debug"
+	"golang.org/x/text/unicode/rangetable"
+	"regexp"
 )
 
 func marshError(input interface{}, stage string, err error) {
@@ -64,12 +65,12 @@ func PathFormatter(input []string) string {
 	 escapeChars := ".-"
 	var r string
 	for i,str := range input {
-
+		wrapped := regexp.MustCompile("^\".*\"$")
 		// Escape a . in string name for parsing later
-		if strings.ContainsAny(str, escapeChars) {
+		if !wrapped.MatchString(str) && strings.ContainsAny(str, escapeChars) {
+
 			str = "\"" + str + "\""
 		}
-		//str = strings.Replace(str, ".", "%x2E", -1)
 
 		if i == (len(input) - 1) {
 			r = r + str
@@ -140,33 +141,27 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	return false
 }
 
-// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of PathFormatter
+// PathSplit: Splits up jmespath format path into a slice, will ignore quote wrapping
+// opposite of PathFormatter
 func PathSplit(input string) []string {
-
-	str := escape(input)
-	for i := range str {
-		str[i] = strings.Replace(str[i], "\\.", ".", -1)
-	}
-	return str
+	return escape(input)
 }
 
 func escape(input string) []string {
-	slashRange := rangetable.New(rune('\\'))
 	dotRange := rangetable.New(rune('.'))
 	old := rune(0)
 	f := func(c rune) bool {
 		switch {
-		case old == rune('\\'):
+		case c == old:
 			old = rune(0)
 			return false
 		case old != rune(0):
 			return false
-		case unicode.In(c, slashRange):
+		case unicode.In(c, unicode.Quotation_Mark):
 			old = c
 			return false
 		default:
-			return  unicode.In(c, dotRange)
-
+			return unicode.In(c, dotRange)
 		}
 	}
 	return strings.FieldsFunc(input, f)
