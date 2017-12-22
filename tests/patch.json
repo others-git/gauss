@@ -32,6 +32,10 @@
     "Value": {
       "Ref": "Size"
     }
+  },{
+    "Key": "Size",
+    "Path": "Resources.ALB",
+    "Value": "Max"
   }],
   "Indexes": [{
     "NewIndex": 5,

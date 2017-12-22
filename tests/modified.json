@@ -1,8 +1,7 @@
 {
   "Resources": {
     "ALB": {
-      "Type": "LoadBalancerv2",
-      "Size": "Max"
+      "Type": "LoadBalancerv2"
     },
     "EC2": {
       "Type": "Instance",

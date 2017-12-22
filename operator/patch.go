@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"reflect"
+
 	"encoding/json"
 )
 
@@ -20,7 +21,14 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	var newObject interface{}
 	// Updated order Index > Changed > Removed > Added
 
-	newObject, err := iterateAdded(patch.Added, *originalObject)
+	newObject, err := iterateRemoved(patch.Removed, *originalObject)
+	if err != nil {
+		return nil, err
+	}
+
+
+
+	newObject, err = iterateAdded(patch.Added, *originalObject)
 	if err != nil {
  	  return nil, err
    }
@@ -31,11 +39,49 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	}
 
 
+
 	res, _ := json.Marshal(newObject)
 	fmt.Println(string(res))
 	return &newObject, nil
 }
 
+
+func iterateRemoved(removed []parsing.RemovedDifference, originalObject interface{}) (*interface{}, error) {
+	var newObject interface{}
+
+	// iterate over removed objects
+	for _, i := range removed {
+
+		originPath := i.Path
+		key := i.Key
+		value := i.Value
+
+		// validate jmespath
+		_, err :=  jmespath.Compile(originPath)
+		if err != nil {
+			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			return nil, nErr
+		}
+
+		// slice up path
+		slicedPath := parsing.PathSplit(originPath)
+
+		// create child object
+		childObject, err := removeChild(slicedPath, key, value, originalObject)
+		if err != nil {
+			return nil, err
+		}
+
+		// wrap child object to create new object
+		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	}
+
+	return &newObject, nil
+}
 
 // iterate over changed objects
 func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (*interface{}, error) {
@@ -74,8 +120,6 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 	return &newObject, nil
 }
 
-
-
 // iterate over changed objects
 func iterateChanged(changed []parsing.ChangedDifference, originalObject interface{}) (*interface{}, error) {
 	var newObject interface{}
@@ -113,6 +157,67 @@ func iterateChanged(changed []parsing.ChangedDifference, originalObject interfac
 	return &newObject, nil
 }
 
+
+func removeChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
+
+	var orphan interface{}
+	var newObject interface{}
+
+	// check path for index
+	index, stringPath, err := makePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	objectName := path[len(path)-1]
+
+	// get working directory based on path
+	objectDir,err := jmespath.Search(*stringPath, object)
+	if err != nil {
+		return nil, err
+	}
+
+	// determine what type of object to remove
+	if key != "" {
+		// create k[v] type and return
+		orphan = map[string]interface{}{
+			key: value,
+		}
+	} else {
+		orphan = value
+	}
+
+	// replace logic for slice value
+	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
+		// cast to slice of interfaces
+		objectSlice := objectDir.([]interface{})
+		// if the object to orphan equals what's in the original object, drop it
+		if reflect.DeepEqual(objectSlice[*index], orphan) {
+			objectSlice = append(objectSlice[:*index], objectSlice[*index+1:])
+		} else {
+			nErr := fmt.Errorf("object to remove: %s\ndoes not match existing: %s",
+				orphan, objectSlice[*index])
+			return nil, nErr
+		}
+		newObject = objectSlice
+	} else {
+
+		// Cast to maps
+		objectMap := objectDir.(map[string]interface{})
+		orphan := orphan.(map[string]interface{})
+
+		if parsing.MapMatchAny(orphan, objectMap) {
+			delete(objectMap, key)
+		} else {
+			nErr := fmt.Errorf("object to remove: %s\ndoes not match existing: %s",
+				orphan, objectMap[objectName])
+			return nil, nErr
+		}
+		newObject = objectMap
+	}
+
+	return &newObject, nil
+}
 
 // same as create but replaces slice index rather than inserting
 func replaceChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
@@ -204,18 +309,31 @@ func createChild(path []string, key string, value interface{}, object interface{
 		// cast to slice of interfaces
 		objectSlice := objectDir.([]interface{})
 
-		// insert into slice
-		objectSlice = append(objectSlice, 0)
-		copy(objectSlice[*index+1:], objectSlice[*index:])
-		objectSlice[*index] = newObject
-		newObject = objectSlice
+		// if index is greater then total length we can't insert to add
+		if *index > len(objectSlice) {
+			// create new slice of index length and copy into it
+			newSlice := make([]interface{}, *index+1)
+
+			copy(newSlice, objectSlice)
+
+			newSlice[*index] = newObject
+
+			newObject = newSlice
+		} else {
+			// insert into slice
+			objectSlice = append(objectSlice, 0)
+			copy(objectSlice[*index+1:], objectSlice[*index:])
+			objectSlice[*index] = newObject
+			newObject = objectSlice
+		}
+
 	}
 
 	return &newObject, nil
 }
 
 // recreate the template with the updated child object
-func addParent(path []string, child interface{}, object interface{}) (*interface{}, error) {
+func addParent(path []string, child interface{}, stack interface{}) (*interface{}, error) {
 	var objectDir interface{}
 
 	// adjust path
@@ -223,15 +341,16 @@ func addParent(path []string, child interface{}, object interface{}) (*interface
 	lessPath := path[:len(path)-1]
 	pathLen := len(path)-1
 
+	// get string path
+	index, stringPath, err := makePath(lessPath)
+	if err != nil {
+		return nil, err
+	}
+
 	if pathLen > 0 {
-		// get string path
-		_, stringPath, err := makePath(lessPath)
-		if err != nil {
-			return nil, err
-		}
 
 		// get working directory based on path
-		objectDir, err = jmespath.Search(*stringPath, object)
+		objectDir, err = jmespath.Search(*stringPath, stack)
 		if err != nil {
 			nErr := fmt.Errorf("invalid jmespath expression: %q", *stringPath)
 			fmt.Println(objectName)
@@ -240,14 +359,23 @@ func addParent(path []string, child interface{}, object interface{}) (*interface
 			return nil, nErr
 		}
 	} else {
-		objectDir = object
+		objectDir = stack
 	}
 
-	//tmpObject := make(map[string]interface{})
-	objectDir.(map[string]interface{})[objectName] = child
+	// handle slice within the path
+	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
+		if index == nil {
+			nErr := fmt.Errorf("operating stack is type Slice but path does not contain index")
+			return nil, nErr
+		}
+		objectDir.([]interface{})[*index] = child
+	}	else {
+		objectDir.(map[string]interface{})[objectName] = child
+	}
+
 
 	if pathLen > 0 {
-		return addParent(lessPath, objectDir, object)
+		return addParent(lessPath, objectDir, stack)
 	}
 	return &objectDir, nil
 }
@@ -292,7 +420,7 @@ func makePath(path []string) (*int, *string, error) {
 	return nil, &stringPath, nil
 }
 
-
+// reduce two maps
 func mapReduce(a map[string]interface{}, b map[string]interface{}) map[string]interface{} {
 	for k, v := range b {
 		a[k] = v

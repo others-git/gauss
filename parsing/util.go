@@ -124,9 +124,23 @@ func SliceIndex(i int, path []string) []string {
 	return nPath
 }
 
+// MatchAny check if an object exists anywhere in a slice
 func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	for i := range compareSlice {
 		if reflect.DeepEqual(compare, compareSlice[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+// MapMatchAny check if map exists in larger map
+func MapMatchAny(a map[string]interface{}, b map[string]interface{}) bool {
+	for k,v  :=  range b {
+		c := map[string]interface{}{
+			k:v,
+		}
+		if reflect.DeepEqual(a, c) {
 			return true
 		}
 	}
