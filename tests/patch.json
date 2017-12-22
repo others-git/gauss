@@ -1,7 +1,7 @@
 {
   "Changed": [
     {
-      "Path": "Out\\.puts.Default[6]",
+      "Path": "\"Out.puts\".Default[6]",
       "NewValue": "asdf",
       "OldValue": {
         "EC2-5": {
@@ -22,7 +22,7 @@
     },
     {
       "Key": "EC2-5",
-      "Path": "Out\\.puts.Default[5]",
+      "Path": "\"Out.puts\".Default[5]",
       "Value": {
         "Ref": [
           {
@@ -32,14 +32,14 @@
       }
     },
     {
-      "Path": "Out\\.puts.Default[7]",
+      "Path": "\"Out.puts\".Default[7]",
       "Value": "asdf"
     }
   ],
   "Removed": [
     {
       "Key": "ALB2",
-      "Path": "Out\\.puts.Default[5]",
+      "Path": "\"Out.puts\".Default[5]",
       "Value": {
         "Ref": "Size"
       }

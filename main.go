@@ -100,6 +100,12 @@ func main() {
 					EnvVar: "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
+					Name:   "output",
+					Usage:  "Output types available: formatted, raw",
+					Value:  "raw",
+					EnvVar: "DIFF_OUTPUT",
+				},
+				cli.StringFlag{
 					Name:   "skip-keys, s",
 					Usage:  "`ORIGINAL` to PATCH",
 					Value:  "",

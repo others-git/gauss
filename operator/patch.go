@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"reflect"
 
-	"encoding/json"
 )
 
 // https://github.com/golang/go/wiki/SliceTricks
@@ -38,56 +37,6 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	if err != nil {
 		return nil, err
 	}
-
-	// index
-	/*
-	newObject, err = interateIndex(patch.Indexes, *originalObject)
-	if err != nil {
-		return nil, err
-	}
-	*/
-
-
-	res, _ := json.Marshal(newObject)
-	fmt.Println(string(res))
-	return &newObject, nil
-}
-
-// fiddle with slice indexes
-func interateIndex(indexes []parsing.IndexDifference, originalObject interface{}) (*interface{}, error) {
-	var newObject interface{}
-
-	for _,i := range indexes {
-
-		originPath := i.Path
-		newIndex := i.NewIndex
-		oldIndex := i.OldIndex
-		value := i.Value
-
-		// validate jmespath
-		_, err :=  jmespath.Compile(originPath)
-		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T", err)
-			return nil, nErr
-		}
-
-		// slice up path
-		slicedPath := parsing.PathSplit(originPath)
-
-		// create child object
-		childObject, err := moveIndex(slicedPath, oldIndex, newIndex, value, originalObject)
-		if err != nil {
-			return nil, err
-		}
-
-		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, *childObject, originalObject)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-
 
 	return &newObject, nil
 }
@@ -266,28 +215,6 @@ func removeChild(path []string, key string, value interface{}, object interface{
 	}
 
 	return &newObject, nil
-}
-
-
-func moveIndex(path []string, oldIndex int, newIndex int, value interface{}, object interface{}) (*interface{}, error) {
-
-	// check path for index
-	_, stringPath, err := makePath(path)
-	if err != nil {
-		return nil, err
-	}
-
-	// get working directory based on path
-	objectDir,err := jmespath.Search(*stringPath, object)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(objectDir)
-	//currentIndex := parsing.SliceIndexOf()
-	//fmt.Println(currentIndex)
-
-	return nil, nil
-
 }
 
 // same as create but replaces slice index rather than inserting
@@ -480,13 +407,13 @@ func makePath(path []string) (*int, *string, error) {
 		path[len(path)-1] = locationName
 
 		// combine the sliced path into jmespath format
-		stringPath := parsing.PathFormatter(path)
+		stringPath := parsing.CreatePath(path)
 
 		return &locationInt, &stringPath, nil
 	}
 
 	// combine the sliced path into jmespath format
-	stringPath := parsing.PathFormatter(path)
+	stringPath := parsing.CreatePath(path)
 
 	return nil, &stringPath, nil
 }

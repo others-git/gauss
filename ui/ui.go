@@ -122,9 +122,12 @@ func Patch(
 
 	originObject.Read(original)
 
-	operator.Patch(&patcher, &originObject)
+	newObject, err := operator.Patch(&patcher, &originObject)
+	if err != nil {
+		return err
+	}
 
-	/*
+
 	switch output {
 
 	case "formatted":
@@ -132,8 +135,7 @@ func Patch(
 
 	case "raw":
 
-		objectDiff.Sort()
-		output, err := json.Marshal(objectDiff)
+		output, err := json.Marshal(newObject)
 		if err != nil {
 			return err
 		}
@@ -144,7 +146,7 @@ func Patch(
 		err := fmt.Errorf("output type unknown: %T", output)
 		return err
 	}
-	*/
+
 
 	return nil
 }
