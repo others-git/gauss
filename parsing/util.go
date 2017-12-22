@@ -93,6 +93,18 @@ func IndexOf(inputList []string, inputKey string) int {
 }
 
 
+func SliceIndexOf(item interface{}, list []interface{}) int {
+	for i := 0; i < len(list); i++ {
+		if list[i] != nil {
+			if reflect.DeepEqual(item, list[i]) {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+
 // UnorderedKeyMatch: Returns a bool dependant on all 'keys' in a map matching.
 func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
 	istanbool := true

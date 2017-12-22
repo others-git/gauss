@@ -19,25 +19,33 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	originalObject := &original.Data
 
 	var newObject interface{}
-	// Updated order Index > Changed > Removed > Added
+	// Updated order Removed > Added > Changed > Indexes
 
+	// remove
 	newObject, err := iterateRemoved(patch.Removed, *originalObject)
 	if err != nil {
 		return nil, err
 	}
 
-
-
+	// add
 	newObject, err = iterateAdded(patch.Added, *originalObject)
 	if err != nil {
- 	  return nil, err
-   }
+		return nil, err
+	}
 
+	// alter
 	newObject, err = iterateChanged(patch.Changed, *originalObject)
 	if err != nil {
 		return nil, err
 	}
 
+	// index
+	/*
+	newObject, err = interateIndex(patch.Indexes, *originalObject)
+	if err != nil {
+		return nil, err
+	}
+	*/
 
 
 	res, _ := json.Marshal(newObject)
@@ -45,7 +53,46 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	return &newObject, nil
 }
 
+// fiddle with slice indexes
+func interateIndex(indexes []parsing.IndexDifference, originalObject interface{}) (*interface{}, error) {
+	var newObject interface{}
 
+	for _,i := range indexes {
+
+		originPath := i.Path
+		newIndex := i.NewIndex
+		oldIndex := i.OldIndex
+		value := i.Value
+
+		// validate jmespath
+		_, err :=  jmespath.Compile(originPath)
+		if err != nil {
+			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			return nil, nErr
+		}
+
+		// slice up path
+		slicedPath := parsing.PathSplit(originPath)
+
+		// create child object
+		childObject, err := moveIndex(slicedPath, oldIndex, newIndex, value, originalObject)
+		if err != nil {
+			return nil, err
+		}
+
+		// wrap child object to create new object
+		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+
+
+	return &newObject, nil
+}
+
+// iterate over objects to remove
 func iterateRemoved(removed []parsing.RemovedDifference, originalObject interface{}) (*interface{}, error) {
 	var newObject interface{}
 
@@ -83,7 +130,7 @@ func iterateRemoved(removed []parsing.RemovedDifference, originalObject interfac
 	return &newObject, nil
 }
 
-// iterate over changed objects
+// iterate over objects to add
 func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (*interface{}, error) {
 	var newObject interface{}
 
@@ -120,7 +167,7 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 	return &newObject, nil
 }
 
-// iterate over changed objects
+// iterate over objects to change
 func iterateChanged(changed []parsing.ChangedDifference, originalObject interface{}) (*interface{}, error) {
 	var newObject interface{}
 
@@ -157,6 +204,8 @@ func iterateChanged(changed []parsing.ChangedDifference, originalObject interfac
 	return &newObject, nil
 }
 
+
+////////
 
 func removeChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
 
@@ -217,6 +266,28 @@ func removeChild(path []string, key string, value interface{}, object interface{
 	}
 
 	return &newObject, nil
+}
+
+
+func moveIndex(path []string, oldIndex int, newIndex int, value interface{}, object interface{}) (*interface{}, error) {
+
+	// check path for index
+	_, stringPath, err := makePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// get working directory based on path
+	objectDir,err := jmespath.Search(*stringPath, object)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(objectDir)
+	//currentIndex := parsing.SliceIndexOf()
+	//fmt.Println(currentIndex)
+
+	return nil, nil
+
 }
 
 // same as create but replaces slice index rather than inserting
@@ -312,7 +383,7 @@ func createChild(path []string, key string, value interface{}, object interface{
 		// if index is greater then total length we can't insert to add
 		if *index > len(objectSlice) {
 			// create new slice of index length and copy into it
-			newSlice := make([]interface{}, *index+1)
+			newSlice := make([]interface{}, *index)
 
 			copy(newSlice, objectSlice)
 
