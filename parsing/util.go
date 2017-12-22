@@ -23,7 +23,7 @@ func marshError(input interface{}, stage string, err error) {
 	}
 }
 
-
+// Remarshal deprecated
 func Remarshal(input interface{}) KeyValue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back KeyValue
@@ -35,7 +35,8 @@ func Remarshal(input interface{}) KeyValue {
 }
 
 
-func Slicer(input KeyValue) []string {
+// GetSliceOfKeys creates a slice of keys from an object
+func GetSliceOfKeys(input KeyValue) []string {
 	// Creates an array of key names given a Keyvalue map
 	var r []string
 	for key := range input {
@@ -44,26 +45,10 @@ func Slicer(input KeyValue) []string {
 	return r
 }
 
-// PathFormatter: Given an array, construct it into a jmespath expression
-func PathFormatter(input []string) string {
-	/* ?
-		escape (
-		%x20-2F /    ; Space,!,",#,$,%,&,',(,),*,+,comma,-,.,/
-		%x3A-40 /    ; :,;,<,=,>,?,@
-		%x5B    /    ; Left bracket: [
-		%x5C    /    ; Back slash: \
-		%x5D    /    ; Right bracket: ]
-		%x5E    /    ; Caret: ^
-		%x60    /    ; Backtick: `
-		%x7B-7E /    ; {,|,},~
-		b       /    ; backspace
-		n       /    ; new line
-		f       /    ; form feed
-		r       /    ; carriage return
-		t       )    ; tab
-	 */
-	 escapeChars := ".-"
+// CreatePath: Given an array, construct it into a jmespath expression (string with . separator)
+func CreatePath(input []string) string {
 	var r string
+	escapeChars := ".-"
 	for i,str := range input {
 		wrapped := regexp.MustCompile("^\".*\"$")
 		// Escape a . in string name for parsing later
@@ -71,7 +56,6 @@ func PathFormatter(input []string) string {
 
 			str = "\"" + str + "\""
 		}
-
 		if i == (len(input) - 1) {
 			r = r + str
 		} else {
@@ -106,10 +90,10 @@ func SliceIndexOf(item interface{}, list []interface{}) int {
 
 
 // UnorderedKeyMatch: Returns a bool dependant on all 'keys' in a map matching.
-func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
+func UnorderedKeyMatch(o map[string]interface{}, m map[string]interface{}) bool {
 	istanbool := true
-	oSlice := Slicer(o)
-	mSlice := Slicer(m)
+	oSlice := GetSliceOfKeys(o)
+	mSlice := GetSliceOfKeys(m)
 	for k := range oSlice {
 		val := IndexOf(mSlice, oSlice[k])
 		if val == -1 {
@@ -126,7 +110,7 @@ func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
 	return istanbool
 }
 
-// SliceIndex: Adds an 'index' value to the last string in the slice, used for the 'path' to handle arrays.
+// SliceIndex Adds an 'index' value to the last string in the slice, used for the 'path' to handle arrays.
 func SliceIndex(i int, path []string) []string {
 
 	nPath := make([]string, len(path))
@@ -146,6 +130,7 @@ func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	return false
 }
 
+
 // MapMatchAny check if map exists in larger map
 func MapMatchAny(a map[string]interface{}, b map[string]interface{}) bool {
 	for k,v  :=  range b {
@@ -159,7 +144,9 @@ func MapMatchAny(a map[string]interface{}, b map[string]interface{}) bool {
 	return false
 }
 
-// DoMapArrayKeysMatch: Uses 'UnorderedKeyMatch' to return a bool for two interfaces if they're both maps
+
+
+// DoMapArrayKeysMatch Uses 'UnorderedKeyMatch' to return a bool for two interfaces if they're both maps
 func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	if reflect.TypeOf(o).Kind() == reflect.Map && reflect.TypeOf(m).Kind() == reflect.Map {
 		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
@@ -167,8 +154,7 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	return false
 }
 
-// PathSplit: Splits up jmespath format path into a slice, will ignore quote wrapping
-// opposite of PathFormatter
+// PathSplit Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of CreatePath
 func PathSplit(input string) []string {
 	return escape(input)
 }
