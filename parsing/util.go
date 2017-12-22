@@ -34,7 +34,8 @@ func Remarshal(input interface{}) KeyValue {
 }
 
 
-func Slicer(input KeyValue) []string {
+// GetSliceOfKeys creates a slice of keys from an object
+func GetSliceOfKeys(input KeyValue) []string {
 	// Creates an array of key names given a Keyvalue map
 	var r []string
 	for key := range input {
@@ -43,8 +44,8 @@ func Slicer(input KeyValue) []string {
 	return r
 }
 
-// PathFormatter: Given an array, construct it into a jmespath expression (string with . separator)
-func PathFormatter(input []string) string {
+// CreatePath: Given an array, construct it into a jmespath expression (string with . separator)
+func CreatePath(input []string) string {
 	var r string
 	for i := range input {
 		str := input[i]
@@ -71,10 +72,10 @@ func IndexOf(inputList []string, inputKey string) int {
 
 
 // UnorderedKeyMatch: Returns a bool dependant on all 'keys' in a map matching.
-func UnorderedKeyMatch(o KeyValue, m KeyValue) bool {
+func UnorderedKeyMatch(o map[string]interface{}, m map[string]interface{}) bool {
 	istanbool := true
-	oSlice := Slicer(o)
-	mSlice := Slicer(m)
+	oSlice := GetSliceOfKeys(o)
+	mSlice := GetSliceOfKeys(m)
 	for k := range oSlice {
 		val := IndexOf(mSlice, oSlice[k])
 		if val == -1 {
@@ -118,7 +119,7 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	return false
 }
 
-// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of PathFormatter
+// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of CreatePath
 func PathSplit(input string) []string {
 
 	str := escape(input)
