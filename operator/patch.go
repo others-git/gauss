@@ -12,11 +12,6 @@ import (
 
 // https://github.com/golang/go/wiki/SliceTricks
 
-func patch(patch parsing.ConsumableDifference, original parsing.KeyValue) parsing.KeyValue {
-
-
-	return parsing.KeyValue{}
-}
 
 // Patch: Creates a new object given a 'patch' and 'original'
 func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*interface{}, error) {
@@ -25,9 +20,29 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 	var newObject interface{}
 	// Updated order Index > Changed > Removed > Added
 
+	newObject, err := iterateAdded(patch.Added, *originalObject)
+	if err != nil {
+ 	  return nil, err
+   }
+
+	newObject, err = iterateChanged(patch.Changed, *originalObject)
+	if err != nil {
+		return nil, err
+	}
+
+
+	res, _ := json.Marshal(newObject)
+	fmt.Println(string(res))
+	return &newObject, nil
+}
+
+
+// iterate over changed objects
+func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (*interface{}, error) {
+	var newObject interface{}
 
 	// Iterate over added objects
-	for _, i := range patch.Added {
+	for _, i := range added {
 
 		originPath := i.Path
 		key := i.Key
@@ -44,25 +59,110 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 		slicedPath := parsing.PathSplit(originPath)
 
 		// create child object
-		childObject, err := createChild(slicedPath, key, value, *originalObject)
+		childObject, err := createChild(slicedPath, key, value, originalObject)
 		if err != nil {
 			return nil, err
 		}
 
 		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, *childObject, *originalObject)
+		newObject, err = addParent(slicedPath, *childObject, originalObject)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		// testing so break
-
 	}
 
-	res, _ := json.Marshal(newObject)
-	fmt.Println(string(res))
 	return &newObject, nil
 }
+
+
+
+// iterate over changed objects
+func iterateChanged(changed []parsing.ChangedDifference, originalObject interface{}) (*interface{}, error) {
+	var newObject interface{}
+
+	// Iterate over added objects
+	for _, i := range changed {
+
+		originPath := i.Path
+		key := i.Key
+		value := i.NewValue
+
+		// validate jmespath
+		_, err :=  jmespath.Compile(originPath)
+		if err != nil {
+			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			return nil, nErr
+		}
+
+		// slice up path
+		slicedPath := parsing.PathSplit(originPath)
+
+		// create child object
+		childObject, err := replaceChild(slicedPath, key, value, originalObject)
+		if err != nil {
+			return nil, err
+		}
+
+		// wrap child object to create new object
+		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	return &newObject, nil
+}
+
+
+// same as create but replaces slice index rather than inserting
+func replaceChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
+
+	var newObject interface{}
+
+	// check path for index
+	index, stringPath, err := makePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// get working directory based on path
+	objectDir,err := jmespath.Search(*stringPath, object)
+	if err != nil {
+		return nil, err
+	}
+	// determine what type of object we need to make - NEED MORE CHECKS
+	if key != "" {
+		// create k[v] type and return
+		newChild := map[string]interface{}{
+			key: value,
+		}
+
+		// reduce maps
+		if reflect.TypeOf(objectDir).Kind() == reflect.Map {
+			newObject = mapReduce(objectDir.(map[string]interface{}), newChild)
+		} else {
+			newObject = newChild
+		}
+
+	} else {
+
+		newObject = value
+	}
+
+	// replace logic for slice value
+	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
+		//TODO: do thing with index
+		// cast to slice of interfaces
+		objectSlice := objectDir.([]interface{})
+
+		// insert into slice
+		objectSlice[*index] = newObject
+		newObject = objectSlice
+	}
+
+	return &newObject, nil
+}
+
 
 // creates new child object from key and value
 func createChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
@@ -87,10 +187,6 @@ func createChild(path []string, key string, value interface{}, object interface{
 			key: value,
 		}
 		// reduce maps
-		fmt.Println(objectDir)
-		fmt.Println(path)
-		fmt.Println(key)
-		fmt.Println(value)
 		if reflect.TypeOf(objectDir).Kind() == reflect.Map {
 			newObject = mapReduce(objectDir.(map[string]interface{}), newChild)
 		} else {
