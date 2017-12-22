@@ -22,7 +22,7 @@ func marshError(input interface{}, stage string, err error) {
 	}
 }
 
-
+// Remarshal deprecated
 func Remarshal(input interface{}) KeyValue {
 	// This is just a nasty type conversions, marshals an interface and then back into our Keyvalue map type
 	var back KeyValue
@@ -92,7 +92,7 @@ func UnorderedKeyMatch(o map[string]interface{}, m map[string]interface{}) bool 
 	return istanbool
 }
 
-// SliceIndex: Adds an 'index' value to the last string in the slice, used for the 'path' to handle arrays.
+// SliceIndex Adds an 'index' value to the last string in the slice, used for the 'path' to handle arrays.
 func SliceIndex(i int, path []string) []string {
 
 	nPath := make([]string, len(path))
@@ -111,7 +111,7 @@ func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	return false
 }
 
-// DoMapArrayKeysMatch: Uses 'UnorderedKeyMatch' to return a bool for two interfaces if they're both maps
+// DoMapArrayKeysMatch Uses 'UnorderedKeyMatch' to return a bool for two interfaces if they're both maps
 func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	if reflect.TypeOf(o).Kind() == reflect.Map && reflect.TypeOf(m).Kind() == reflect.Map {
 		return UnorderedKeyMatch(Remarshal(o), Remarshal(m))
@@ -119,7 +119,7 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 	return false
 }
 
-// PathSplit: Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of CreatePath
+// PathSplit Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of CreatePath
 func PathSplit(input string) []string {
 
 	str := escape(input)
