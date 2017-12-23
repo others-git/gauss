@@ -140,6 +140,7 @@ func iterateChanged(changed []parsing.ChangedDifference, originalObject interfac
 		if err != nil {
 			return nil, err
 		}
+
 	}
 
 	return &newObject, nil
@@ -222,7 +223,8 @@ func replaceChild(path []string, key string, value interface{}, object interface
 		value, _ = strconv.Unquote(val)
 	}
 
-	// check path for index
+
+	// create index and jmespath
 	index, compiledPath, err := makePath(path)
 	if err != nil {
 		return nil, err
@@ -355,18 +357,21 @@ func createChild(path []string, key string, value interface{}, object interface{
 func addParent(path []string, child interface{}, stack interface{}) (*interface{}, error) {
 	var objectDir interface{}
 
+	// copy path into tmp to not mess with path
+	tmp := make([]string, len(path))
+	copy(tmp, path)
+
 	// adjust path
-	keyName := path[len(path)-1]
-	lessPath := path[:len(path)-1]
-	pathLen := len(path)-1
+	keyName := tmp[len(tmp)-1]
+	lessPath := tmp[:len(tmp)-1]
+	pathLen := len(tmp)-1
 
-
-	fmt.Println(keyName)
 	// get string path
 	index, compiledPath, err := makePath(lessPath)
 	if err != nil {
 		return nil, err
 	}
+
 	if pathLen > 0 {
 
 		// get working directory based on path
@@ -394,8 +399,36 @@ func addParent(path []string, child interface{}, stack interface{}) (*interface{
 		objectDir.(map[string]interface{})[objectName] = child
 	}
 
+	/*
+	// check if there is a multi index item in the path
+	multIndexReg := regexp.MustCompile("^\"?.*\"?\\[[\\d]]\\[[\\d]\\]+")
+	if 	multIndexReg.MatchString(keyName) {
 
+		lastIndexReg := regexp.MustCompile("\\[[\\d]\\]$")
+
+		// replace last index and append it to path
+		tmp := lastIndexReg.ReplaceAllString(keyName, "")
+
+		lessPath = append(lessPath, tmp)
+		// do thing..?
+	}
+	*/
+
+	/*
+	fmt.Printf("raw path %s:\n", tmp)
+	fmt.Printf("length: %d\n",pathLen)
+	fmt.Printf("reduced path: %s\n",lessPath)
+	fmt.Printf("current key name: %s\n",keyName)
+
+	fmt.Println()
+
+	res, _ := json.Marshal(objectDir)
+	fmt.Println(string(res))
+	fmt.Println()
+	*/
 	if pathLen > 0 {
+		//fmt.Println(objectDir)
+
 		return addParent(lessPath, objectDir, stack)
 	}
 	return &objectDir, nil
@@ -405,30 +438,36 @@ func addParent(path []string, child interface{}, stack interface{}) (*interface{
 // strips off index for last object to properly handle slices
 func makePath(path []string) (*int, *jmespath.JMESPath, error) {
 
+	// return nil if we need if here with no path
 	if len(path) == 0 {
 		return nil, nil, nil
 	}
-	location := &path[len(path)-1]
+
+	// copy path into tmp to not mess with path
+	tmp := make([]string, len(path))
+	copy(tmp, path)
+
+	location := tmp[len(tmp)-1]
 	// remove any escaped quotes \" - TODO: check test
 	//*location = regexp.MustCompile("\\\"").ReplaceAllString(*location, "")
 	// compile regex to check for index in path
 	index := regexp.MustCompile("^.*\\[[\\d]\\]$")
 
-	if index.MatchString(*location) {
+	if index.MatchString(location) {
 		// regex to match index int and convert down to int from int64
-		locationIndex := regexp.MustCompile("[\\d]").FindString(*location)
+		locationIndex := regexp.MustCompile("[\\d]").FindString(location)
 		i64, err := strconv.ParseInt(locationIndex, 10, 8)
 		if err != nil {
 			return nil, nil, err
 		}
 		locationInt := int(i64)
 		// regex to find string in path
-		locationName := regexp.MustCompile("\\[[\\d]+\\]$").ReplaceAllString(*location, "")
+		locationName := regexp.MustCompile("\\[[\\d]+\\]$").ReplaceAllString(location, "")
 
-		path[len(path)-1] = locationName
+		tmp[len(tmp)-1] = locationName
 
 		// combine the sliced path into jmespath format
-		stringPath := parsing.CreatePath(path)
+		stringPath := parsing.CreatePath(tmp)
 
 		// validate jmespath
 		compiled, err :=  jmespath.Compile(stringPath)
@@ -442,7 +481,7 @@ func makePath(path []string) (*int, *jmespath.JMESPath, error) {
 	}
 
 	// combine the sliced path into jmespath format
-	stringPath := parsing.CreatePath(path)
+	stringPath := parsing.CreatePath(tmp)
 
 	// validate jmespath
 	compiled, err :=  jmespath.Compile(stringPath)

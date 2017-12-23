@@ -127,7 +127,6 @@ func Patch(
 		return err
 	}
 
-
 	switch output {
 
 	case "formatted":
@@ -139,14 +138,12 @@ func Patch(
 		if err != nil {
 			return err
 		}
-
 		writer.Write(output)
 
 	default:
 		err := fmt.Errorf("output type unknown: %T", output)
 		return err
 	}
-
 
 	return nil
 }
