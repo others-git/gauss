@@ -89,7 +89,7 @@ func SliceIndexOf(item interface{}, list []interface{}) int {
 }
 
 
-// UnorderedKeyMatch: Returns a bool dependant on all 'keys' in a map matching.
+// UnorderedKeyMatch Returns a bool dependant on all 'keys' in a map matching.
 func UnorderedKeyMatch(o map[string]interface{}, m map[string]interface{}) bool {
 	istanbool := true
 	oSlice := GetSliceOfKeys(o)
