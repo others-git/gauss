@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-    "golang.org/x/text/unicode/rangetable"
 	"runtime/debug"
+	"golang.org/x/text/unicode/rangetable"
+	"regexp"
 )
 
 func marshError(input interface{}, stage string, err error) {
@@ -47,15 +48,20 @@ func GetSliceOfKeys(input KeyValue) []string {
 // CreatePath: Given an array, construct it into a jmespath expression (string with . separator)
 func CreatePath(input []string) string {
 	var r string
-	for i := range input {
-		str := input[i]
+	escapeChars := ".-"
+	for i,str := range input {
+		wrapped := regexp.MustCompile("^\".*\"$")
 		// Escape a . in string name for parsing later
-		str = strings.Replace(str, ".", "\\.", -1)
+		if !wrapped.MatchString(str) && strings.ContainsAny(str, escapeChars) {
+
+			str = "\"" + str + "\""
+		}
 		if i == (len(input) - 1) {
 			r = r + str
 		} else {
 			r = r + str + "."
 		}
+
 	}
 	return r
 }
@@ -65,6 +71,18 @@ func IndexOf(inputList []string, inputKey string) int {
 	for i, v := range inputList {
 		if v == inputKey {
 			return i
+		}
+	}
+	return -1
+}
+
+// SliceIndexOf find index of item from in slice
+func SliceIndexOf(item interface{}, list []interface{}) int {
+	for i := 0; i < len(list); i++ {
+		if list[i] != nil {
+			if reflect.DeepEqual(item, list[i]) {
+				return i
+			}
 		}
 	}
 	return -1
@@ -102,6 +120,7 @@ func SliceIndex(i int, path []string) []string {
 	return nPath
 }
 
+// MatchAny check if an object exists anywhere in a slice
 func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	for i := range compareSlice {
 		if reflect.DeepEqual(compare, compareSlice[i]) {
@@ -110,6 +129,22 @@ func MatchAny(compare interface{}, compareSlice []interface{}) bool {
 	}
 	return false
 }
+
+
+// MapMatchAny check if map exists in larger map
+func MapMatchAny(a map[string]interface{}, b map[string]interface{}) bool {
+	for k,v  :=  range b {
+		c := map[string]interface{}{
+			k:v,
+		}
+		if reflect.DeepEqual(a, c) {
+			return true
+		}
+	}
+	return false
+}
+
+
 
 // DoMapArrayKeysMatch Uses 'UnorderedKeyMatch' to return a bool for two interfaces if they're both maps
 func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
@@ -121,31 +156,24 @@ func DoMapArrayKeysMatch(o interface{}, m interface{}) bool {
 
 // PathSplit Splits up jmespath format path into a slice, will ignore escaped '.' ; opposite of CreatePath
 func PathSplit(input string) []string {
-
-	str := escape(input)
-	for i := range str {
-		str[i] = strings.Replace(str[i], "\\.", ".", -1)
-	}
-	return str
+	return escape(input)
 }
 
 func escape(input string) []string {
-	slashRange := rangetable.New(rune('\\'))
 	dotRange := rangetable.New(rune('.'))
 	old := rune(0)
 	f := func(c rune) bool {
 		switch {
-		case old == rune('\\'):
+		case c == old:
 			old = rune(0)
 			return false
 		case old != rune(0):
 			return false
-		case unicode.In(c, slashRange):
+		case unicode.In(c, unicode.Quotation_Mark):
 			old = c
 			return false
 		default:
-			return  unicode.In(c, dotRange)
-
+			return unicode.In(c, dotRange)
 		}
 	}
 	return strings.FieldsFunc(input, f)
