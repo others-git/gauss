@@ -45,7 +45,7 @@ func GetSliceOfKeys(input KeyValue) []string {
 	return r
 }
 
-// CreatePath: Given an array, construct it into a jmespath expression (string with . separator)
+// CreatePath Given an array, construct it into a jmespath expression (string with . separator)
 func CreatePath(input []string) string {
 	var r string
 	escapeChars := ".-"
@@ -66,7 +66,7 @@ func CreatePath(input []string) string {
 	return r
 }
 
-// IndexOf: Finds index of an object in a given array
+// IndexOf Finds index of an object in a given array
 func IndexOf(inputList []string, inputKey string) int {
 	for i, v := range inputList {
 		if v == inputKey {
