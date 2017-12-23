@@ -70,13 +70,17 @@ func main() {
 					os.Exit(1)
 				}
 
-				return ui.Diff(
+				err := ui.Diff(
 					c.String("origin"),
 					c.String("modified"),
 					c.String("output"),
 					c.String("diff-path"),
 					os.Stdout,
 				)
+				if err != nil {
+					fmt.Printf("\nERROR!\n %s", err)
+				}
+				return nil
 			},
 
 
@@ -126,13 +130,17 @@ func main() {
 					os.Exit(1)
 				}
 
-				return ui.Patch(
+				err := ui.Patch(
 					c.String("patch"),
 					c.String("original"),
 					c.String("output"),
 					c.String("skip-keys"),
 					os.Stdout,
 				)
+				if err != nil {
+					fmt.Printf("\nERROR!\n %s", err)
+				}
+				return nil
 
 			},
 		},

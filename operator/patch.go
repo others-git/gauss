@@ -55,7 +55,7 @@ func iterateRemoved(removed []parsing.RemovedDifference, originalObject interfac
 		// validate jmespath
 		_, err :=  jmespath.Compile(originPath)
 		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, originPath)
 			return nil, nErr
 		}
 
@@ -71,7 +71,7 @@ func iterateRemoved(removed []parsing.RemovedDifference, originalObject interfac
 		// wrap child object to create new object
 		newObject, err = addParent(slicedPath, *childObject, originalObject)
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 
 	}
@@ -93,7 +93,7 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 		// validate jmespath
 		_, err :=  jmespath.Compile(originPath)
 		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, originPath)
 			return nil, nErr
 		}
 
@@ -109,7 +109,7 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 		// wrap child object to create new object
 		newObject, err = addParent(slicedPath, *childObject, originalObject)
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 	}
 
@@ -130,7 +130,7 @@ func iterateChanged(changed []parsing.ChangedDifference, originalObject interfac
 		// validate jmespath
 		_, err :=  jmespath.Compile(originPath)
 		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, originPath)
 			return nil, nErr
 		}
 
@@ -146,7 +146,7 @@ func iterateChanged(changed []parsing.ChangedDifference, originalObject interfac
 		// wrap child object to create new object
 		newObject, err = addParent(slicedPath, *childObject, originalObject)
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 	}
 
@@ -349,11 +349,10 @@ func addParent(path []string, child interface{}, stack interface{}) (*interface{
 
 		// get working directory based on path
 		objectDir, err = jmespath.Search(*stringPath, stack)
-		if err != nil {
-			nErr := fmt.Errorf("invalid jmespath expression: %q", *stringPath)
-			fmt.Println(objectName)
-			fmt.Println(lessPath)
-			fmt.Println(pathLen)
+		if err != nil || objectDir == nil {
+			nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
+				"\npath expression returned nil\nquery path: %q\nresult: %q\n\n" +
+					"::::::::::::::::::::::::::::::::::::::\n", *stringPath, objectDir)
 			return nil, nErr
 		}
 	} else {

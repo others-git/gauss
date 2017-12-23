@@ -48,14 +48,29 @@ func GetSliceOfKeys(input KeyValue) []string {
 // CreatePath Given an array, construct it into a jmespath expression (string with . separator)
 func CreatePath(input []string) string {
 	var r string
-	escapeChars := ".-"
-	for i,str := range input {
-		wrapped := regexp.MustCompile("^\".*\"$")
-		// Escape a . in string name for parsing later
-		if !wrapped.MatchString(str) && strings.ContainsAny(str, escapeChars) {
+	var indexStr string
 
-			str = "\"" + str + "\""
+	// characters to escape
+	escapeChars := ".-:"
+
+	// iterate over path slice to construct string path
+	for i,str := range input {
+
+		wrappedReg := regexp.MustCompile("^\".*\"$")
+		indexReg := regexp.MustCompile("\\[[\\d]\\]+")
+
+		// if string has index values iterate them all into string
+		index := indexReg.FindAllString(str, -1)
+		for i := range index {
+			indexStr = indexStr + index[i]
 		}
+		raw := indexReg.ReplaceAllString(str, "")
+
+		// Escape a . in string name for parsing later
+		if !wrappedReg.MatchString(str) && strings.ContainsAny(str, escapeChars) {
+			str = "\"" + raw + "\"" + indexStr
+		}
+
 		if i == (len(input) - 1) {
 			r = r + str
 		} else {
