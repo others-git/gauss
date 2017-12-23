@@ -59,11 +59,11 @@ func TestDiff(t *testing.T) {
 			func(t *testing.T) {
 
 				// Read and unmarshal the expected output.
-				expectedJson, err := ioutil.ReadFile("./tests/" + tc.diff)
+				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.diff)
 				require.Nil(err, "The test diff should be readable.")
 
 				var expected parsing.ConsumableDifference
-				json.Unmarshal(expectedJson, &expected)
+				json.Unmarshal(expectedJSON, &expected)
 				require.Nil(err, "The test data should be unmarshaled without error.")
 				// sort the arrays
 
@@ -108,7 +108,7 @@ func TestDiff(t *testing.T) {
 						tc.origin,
 						tc.modified,
 						tc.diff,
-						string(expectedJson),
+						string(expectedJSON),
 						string(result),
 					),
 				)
@@ -163,16 +163,16 @@ func TestPatch(t *testing.T) {
 			func(t *testing.T) {
 
 				// Read and unmarshal the expected output.
-				expectedJson, err := ioutil.ReadFile("./tests/" + tc.modified)
+				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.modified)
 				require.Nil(err, "The test diff should be readable.")
 
 				var expected parsing.ConsumableDifference
-				json.Unmarshal(expectedJson, &expected)
+				json.Unmarshal(expectedJSON, &expected)
 				require.Nil(err, "The test data should be unmarshaled without error.")
 				// sort the arrays
 
 				// Execute a Diff against the Origin and Modified test files.
-				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
+				var testBuffer = bytes.NewBuffer(nil)
 
 				ui.Patch(
 					"./tests/"+tc.modified,
@@ -212,7 +212,7 @@ func TestPatch(t *testing.T) {
 						tc.origin,
 						tc.modified,
 						tc.patch,
-						string(expectedJson),
+						string(expectedJSON),
 						string(result),
 					),
 				)

@@ -13,7 +13,7 @@ import (
 // https://github.com/golang/go/wiki/SliceTricks
 
 
-// Patch: Creates a new object given a 'patch' and 'original'
+// Patch Creates a new object given a 'patch' and 'original'
 func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*interface{}, error) {
 	originalObject := &original.Data
 

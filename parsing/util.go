@@ -76,7 +76,7 @@ func IndexOf(inputList []string, inputKey string) int {
 	return -1
 }
 
-
+// SliceIndexOf find index of item from in slice
 func SliceIndexOf(item interface{}, list []interface{}) int {
 	for i := 0; i < len(list); i++ {
 		if list[i] != nil {
