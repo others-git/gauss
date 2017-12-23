@@ -1,0 +1,24 @@
+{
+  "c:\\cfn\\hooks.d\\cfn-auto-reloader.conf": {
+    "content": {
+      "Fn::Join": [
+        "",
+        [
+          "[cfn-auto-reloader-hook]\n",
+          "triggers=post.update",
+          "path=Resources.DomainController.Metadata.AWS::CloudFormation::Init\n",
+          "action=cfn-init.exe -v -s ",
+          {
+            "Ref": "AWS::StackId"
+          },
+          " -r DomainController",
+          " --region ",
+          {
+            "Ref": "AWS::Region"
+          },
+          "\n"
+        ]
+      ]
+    }
+  }
+}
