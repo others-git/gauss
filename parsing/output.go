@@ -9,7 +9,7 @@ import (
 var FormattedDiff KeySlice
 
 func format(input ConsumableDifference) KeyValue {
-	var return_value KeyValue
+	var returnValue KeyValue
 
 	FormattedDiff = nil
 	/*
@@ -25,13 +25,17 @@ func format(input ConsumableDifference) KeyValue {
 		}
 	*/
 
-	return return_value
+	return returnValue
 }
 
-func path_builder(path []string) KeyValue {
+
+func pathBuilder(input string) KeyValue {
 	var object KeyValue
 	FormattedDiff = nil
 	r, _ := regexp.Compile("[0-9]+")
+
+	path := PathSplit(input)
+
 	//path_length := len(path)
 	for i := range path {
 		if ok, _ := regexp.MatchString("{Index:[0-9]+}", path[i]); ok {
@@ -43,13 +47,15 @@ func path_builder(path []string) KeyValue {
 	}
 
 	fmt.Println(path)
-	fmt.Println(path)
+	fmt.Println(len(path))
 	return object
 }
 
 // Format formatting function
 func Format(input ConsumableDifference) KeyValue {
-	var return_value KeyValue
+	var returnValue KeyValue
 
-	return return_value
+	pathBuilder(input.Added[0].Path)
+
+	return returnValue
 }

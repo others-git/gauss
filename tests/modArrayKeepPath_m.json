@@ -9,7 +9,7 @@
       "Size": {"Ref":"size"}
     }
   },
-  "Out.puts": {
+  "Outputs": {
     "Default": [
       {"ALB": {"Ref": "Size"}},
       {"EC2": {"Ref": "Size"}},

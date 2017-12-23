@@ -1,7 +1,7 @@
 {
   "Changed": [{
     "Key": "key1-1-1",
-    "Path": "key1.\"key1-1\"",
+    "Path": "",
     "NewValue": "value1",
     "OldValue": "value2"
   }]

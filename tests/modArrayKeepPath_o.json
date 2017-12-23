@@ -9,14 +9,14 @@
       "Size": {"Ref":"size"}
     }
   },
-  "Out.puts": {
+  "Outputs": {
     "Default": [
       {"ALB": {"Ref": "Size"}},
       {"EC2": {"Ref": "Size"}},
       {"EC2-2": {"Ref": "Size"}},
       {"EC2-3": {"Ref": "Size"}},
       {"EC2-4": {"Ref": "Size"}},
-      {"ALB2": {"Ref": "Size"}},
+      {"ALB2": {"Ref": "Size2"}},
       {"EC2-5": {"Ref": [{"FN":"Slice"}]}}
     ]
   }

@@ -7,45 +7,44 @@ type KeyValue map[string]interface{}
 // KeySlice map of string to slice of KeyValue
 type KeySlice map[string][]KeyValue
 
-// Gaussian reader type to handle reading the file and determine if json/yaml
+// Gaussian wrapper to handle inputs
 type Gaussian struct {
-	Data KeyValue // What we read into the struct
+	Data interface{} // What we read into the struct
 	Type string   // Json/Yaml
-
 }
 
-// RemovedDifference removed items from the object
+// RemovedDifference sub struct for removed objects
 type RemovedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  uint32 `json:"-"`
 }
 
-// AddedDifference added items from the object
+// AddedDifference sub struct for added objects
 type AddedDifference struct {
 	Key   string `json:",omitempty"`
 	Path  string
 	Value interface{}
-	sort  string `json:"-"`
+	sort  uint32 `json:"-"`
 }
 
-// ChangedDifference changed items from the object
+// ChangedDifference sub struct for changed objects
 type ChangedDifference struct {
 	Key      string `json:",omitempty"`
 	Path     string
 	NewValue interface{}
 	OldValue interface{}
-	sort     string `json:"-"`
+	sort     uint32 `json:"-"`
 }
 
-// IndexDifference try to determine when array items only change index
+// IndexDifference sub struct for list index changes
 type IndexDifference struct {
 	NewIndex int
 	OldIndex int
 	Path     string
 	Value	 interface{}
-	sort     string `json:"-"`
+	sort     uint32 `json:"-"`
 }
 
 // ConsumableDifference eventual return object

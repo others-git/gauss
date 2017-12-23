@@ -20,7 +20,6 @@ func main() {
 			Usage: "just taking up space",
 		},
 	}
-
 	app.Commands = []cli.Command{
 		{
 			Name:    "diff",
@@ -41,9 +40,15 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:   "output",
-					Usage:  "Output types available: human, machine",
-					Value:  "machine",
+					Usage:  "Output types available: formatted, raw",
+					Value:  "raw",
 					EnvVar: "DIFF_OUTPUT",
+				},
+				cli.StringFlag{
+					Name:   "diff-path",
+					Usage:  "Preform diff on specific bath, given in jmespath",
+					Value:  "",
+					EnvVar: "DIFF_PATH",
 				},
 				cli.StringFlag{
 					Name:  "in, i",
@@ -69,10 +74,12 @@ func main() {
 					c.String("origin"),
 					c.String("modified"),
 					c.String("output"),
+					c.String("diff-path"),
 					os.Stdout,
 				)
-
 			},
+
+
 		},
 		{
 			Name:    "patch",
@@ -81,17 +88,28 @@ func main() {
 			Flags: []cli.Flag{
 
 				cli.StringFlag{
-					Name:        "patch, p",
-					Usage:       "`PATCH` the OBJECT",
-					Value:       "",
-					EnvVar:      "PATCH_OBJECT",
-
+					Name:   "patch, p",
+					Usage:  "`PATCH` the OBJECT",
+					Value:  "",
+					EnvVar: "PATCH_OBJECT",
 				},
 				cli.StringFlag{
-					Name:        "original, o",
-					Usage:       "`ORIGINAL` to PATCH",
-					Value:       "",
-					EnvVar:      "ORIGINAL_OBJECT",
+					Name:   "original, o",
+					Usage:  "`ORIGINAL` to PATCH",
+					Value:  "",
+					EnvVar: "ORIGINAL_OBJECT",
+				},
+				cli.StringFlag{
+					Name:   "output",
+					Usage:  "Output types available: formatted, raw",
+					Value:  "raw",
+					EnvVar: "DIFF_OUTPUT",
+				},
+				cli.StringFlag{
+					Name:   "skip-keys, s",
+					Usage:  "`ORIGINAL` to PATCH",
+					Value:  "",
+					EnvVar: "SKIP_KEYS",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -110,8 +128,9 @@ func main() {
 
 				return ui.Patch(
 					c.String("patch"),
-					c.String("origin"),
+					c.String("original"),
 					c.String("output"),
+					c.String("skip-keys"),
 					os.Stdout,
 				)
 
@@ -119,6 +138,9 @@ func main() {
 		},
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 }

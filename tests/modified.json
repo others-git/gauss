@@ -1,15 +1,15 @@
 {
   "Resources": {
     "ALB": {
-      "Type": "LoadBalancerv2",
-      "Size": "Max"
+      "Type": "LoadBalancerv2"
     },
     "EC2": {
       "Type": "Instance",
-      "Size": {"Ref":"size"}
+      "Size": {"Ref":"size"},
+      "Description": "Testing is hard"
     }
   },
-  "Outputs": {
+  "Out.puts": {
     "Default": [
       {"ALB": {"Ref": "Size"}},
       {"EC2": {"Ref": "Size"}},

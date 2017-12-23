@@ -1,0 +1,10 @@
+{
+  "Changed": [
+    {
+      "Key": "Ref",
+      "Path": "ALB2",
+      "NewValue": "Size",
+      "OldValue": "Size2"
+    }
+  ]
+}

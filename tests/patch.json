@@ -1,1 +1,52 @@
-Everything matches
+{
+  "Changed": [
+    {
+      "Path": "\"Out.puts\".Default[6]",
+      "NewValue": "asdf",
+      "OldValue": {
+        "EC2-5": {
+          "Ref": [
+            {
+              "FN": "Slice"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "Added": [
+    {
+      "Key": "Description",
+      "Path": "Resources.EC2",
+      "Value": "Testing is hard"
+    },
+    {
+      "Key": "EC2-5",
+      "Path": "\"Out.puts\".Default[5]",
+      "Value": {
+        "Ref": [
+          {
+            "FN": "Slice"
+          }
+        ]
+      }
+    },
+    {
+      "Path": "\"Out.puts\".Default[7]",
+      "Value": "asdf"
+    }
+  ],
+  "Removed": [
+    {
+      "Key": "ALB2",
+      "Path": "\"Out.puts\".Default[5]",
+      "Value": {
+        "Ref": "Size"
+      }
+    },{
+      "Key": "Size",
+      "Path": "Resources.ALB",
+      "Value": "Max"
+    }
+  ]
+}
