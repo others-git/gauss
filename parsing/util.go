@@ -56,7 +56,7 @@ func CreatePath(input []string) string {
 	// iterate over path slice to construct string path
 	for i,str := range input {
 
-		wrappedReg := regexp.MustCompile("^\".*\"$")
+		wrappedReg := regexp.MustCompile("^\".*\"(\\[[\\d]\\])?$")
 		indexReg := regexp.MustCompile("\\[[\\d]\\]+")
 
 		// if string has index values iterate them all into string
@@ -68,7 +68,9 @@ func CreatePath(input []string) string {
 
 		// Escape a . in string name for parsing later
 		if !wrappedReg.MatchString(str) && strings.ContainsAny(str, escapeChars) {
-			str = "\"" + raw + "\"" + indexStr
+			str = strconv.Quote(raw)
+			str = str + indexStr
+			//str = "\"" + raw + "\"" + indexStr
 		}
 
 		if i == (len(input) - 1) {
