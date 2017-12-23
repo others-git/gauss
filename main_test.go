@@ -117,7 +117,7 @@ func TestDiff(t *testing.T) {
 	}
 }
 
-/*
+
 func TestPatch(t *testing.T) {
 
 
@@ -132,8 +132,8 @@ func TestPatch(t *testing.T) {
 	testCases := []struct {
 		origin   string
 		modified string
-		diff     string
-		path     string
+		patch     string
+		skipKeys     string
 		output   string
 	}{
 		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
@@ -155,15 +155,15 @@ func TestPatch(t *testing.T) {
 				"Origin:%s, Modified:%s, Diff:%s, Path:%s, Output:%s",
 				tc.origin,
 				tc.modified,
-				tc.diff,
-				tc.path,
+				tc.patch,
+				tc.skipKeys,
 				tc.output,
 			),
 
 			func(t *testing.T) {
 
 				// Read and unmarshal the expected output.
-				expectedJson, err := ioutil.ReadFile("./tests/" + tc.diff)
+				expectedJson, err := ioutil.ReadFile("./tests/" + tc.modified)
 				require.Nil(err, "The test diff should be readable.")
 
 				var expected parsing.ConsumableDifference
@@ -175,21 +175,12 @@ func TestPatch(t *testing.T) {
 				var testBuffer *bytes.Buffer = bytes.NewBuffer(nil)
 
 				ui.Patch(
-					"./tests/"+tc.diff,
+					"./tests/"+tc.modified,
 					"./tests/"+tc.origin,
 					tc.output,
-					tc.path,
+					tc.skipKeys,
 					testBuffer,
 				)
-
-
-					patch string,
-	original string,
-	output string,
-	skipKeys string,
-	writer io.Writer,
-
-
 
 				// Read and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
@@ -220,7 +211,7 @@ func TestPatch(t *testing.T) {
 						),
 						tc.origin,
 						tc.modified,
-						tc.diff,
+						tc.patch,
 						string(expectedJson),
 						string(result),
 					),
@@ -229,4 +220,3 @@ func TestPatch(t *testing.T) {
 		)
 	}
 }
-*/
