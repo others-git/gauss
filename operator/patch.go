@@ -239,8 +239,8 @@ func replaceChild(path []string, key string, value interface{}, object interface
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
 				"\nerror replacing value\n" +
-				"path expression returned nil\nraw path: %q\n" +
-				"compiled path: %q\nresult: %q\n\n" +
+				"path expression returned nil\nraw path: %v\n" +
+				"compiled path: %v\nresult: %v\n\n" +
 				"::::::::::::::::::::::::::::::::::::::\n", path, *compiledPath, objectDir)
 		return nil, nErr
 	}
@@ -312,7 +312,7 @@ func createChild(path []string, key string, value interface{}, object interface{
 	objectDir, err := compiledPath.Search(object)
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-			"\npath expression returned nil\nquery path: %q\nresult: %q\n\n" +
+			"\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
 			"::::::::::::::::::::::::::::::::::::::\n", *compiledPath, objectDir)
 		return nil, nErr
 	}
@@ -409,7 +409,7 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 		newObject, err = compiledPath.Search(stack)
 		if err != nil || newObject == nil {
 			nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-				"\nerror reconstructing object body\npath expression returned nil\nquery path: %q\nresult: %q\n\n" +
+				"\nerror reconstructing object body\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
 					"::::::::::::::::::::::::::::::::::::::\n", *compiledPath, newObject)
 			return nil, nErr
 		}
@@ -458,7 +458,7 @@ func nestedSlice(path []string, child interface{}, stack interface{}) (*interfac
 	objectDir, err := compiledPath.Search(stack)
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-			"\nerror reconstructing object body\npath expression returned nil\nquery path: %q\nresult: %q\n\n" +
+			"\nerror reconstructing object body\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
 			"::::::::::::::::::::::::::::::::::::::\n", *compiledPath, objectDir)
 		return nil, nErr
 	}
