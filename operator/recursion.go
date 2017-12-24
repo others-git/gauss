@@ -37,9 +37,11 @@ func recursion(
 	if originalType == reflect.Map && modifiedType == reflect.Map {
 		original := original.(map[string]interface{})
 		modified := modified.(map[string]interface{})
+
 		if !(parsing.UnorderedKeyMatch(original, modified)) {
 			// check for key differences at the object's top level
 			for k, v := range modified {
+
 				if parsing.IndexOf(parsing.GetSliceOfKeys(original), k) == -1 {
 					added := parsing.AddedDifference{Path: parsing.CreatePath(*path), Key: k, Value: v}
 					ObjectDiff.Added = append(ObjectDiff.Added, added)
@@ -47,6 +49,7 @@ func recursion(
 				}
 			}
 			for k, v := range original {
+
 				if parsing.IndexOf(parsing.GetSliceOfKeys(modified), k) == -1 {
 					removed := parsing.RemovedDifference{Path: parsing.CreatePath(*path), Key: k, Value: v}
 					ObjectDiff.Removed = append(ObjectDiff.Removed, removed)

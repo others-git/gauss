@@ -5,7 +5,7 @@
         "",
         [
           "[cfn-auto-reloader-hook]\n",
-          "triggers=post.update\n",
+          ["","triggers=post.update\n"],
           "path=Resources.DomainController.Metadata.AWS::CloudFormation::Init\n",
           "action=cfn-init.exe -v -s ",
           {
