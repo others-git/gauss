@@ -33,6 +33,7 @@ func TestDiff(t *testing.T) {
 		output   string
 	}{
 		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
+		{"escapeDiff_o.json", "escapeDiff_m.json", "escapeDiff_d.json", "", "raw"},
 		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "", "raw"},
 		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "", "raw"},
@@ -137,6 +138,7 @@ func TestPatch(t *testing.T) {
 		output   string
 	}{
 		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
+		{"escapeDiff_o.json", "escapeDiff_m.json", "escapeDiff_d.json", "", "raw"},
 		{"rmKey_o.json", "rmKey_m.json", "rmKey_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modDeepKey_d.json", "", "raw"},
 		{"addModKey_o.json", "addModKey_m.json", "addModKey_d.json", "", "raw"},

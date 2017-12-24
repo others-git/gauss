@@ -4,6 +4,7 @@ import (
 	"github.com/beard1ess/gauss/parsing"
 	"reflect"
 	"fmt"
+	"strconv"
 )
 
 
@@ -36,9 +37,11 @@ func recursion(
 	if originalType == reflect.Map && modifiedType == reflect.Map {
 		original := original.(map[string]interface{})
 		modified := modified.(map[string]interface{})
+
 		if !(parsing.UnorderedKeyMatch(original, modified)) {
 			// check for key differences at the object's top level
 			for k, v := range modified {
+
 				if parsing.IndexOf(parsing.GetSliceOfKeys(original), k) == -1 {
 					added := parsing.AddedDifference{Path: parsing.CreatePath(*path), Key: k, Value: v}
 					ObjectDiff.Added = append(ObjectDiff.Added, added)
@@ -46,6 +49,7 @@ func recursion(
 				}
 			}
 			for k, v := range original {
+
 				if parsing.IndexOf(parsing.GetSliceOfKeys(modified), k) == -1 {
 					removed := parsing.RemovedDifference{Path: parsing.CreatePath(*path), Key: k, Value: v}
 					ObjectDiff.Removed = append(ObjectDiff.Removed, removed)
@@ -53,13 +57,19 @@ func recursion(
 				}
 			}
 
-			recursion(original, modified, path, ObjectDiff)
+			err := recursion(original, modified, path, ObjectDiff)
+			if err != nil {
+				return err
+			}
 			return nil
 
 		} else if len(parsing.GetSliceOfKeys(original)) > 1 || len(parsing.GetSliceOfKeys(modified)) > 1 {
 			// if there is more than 1 key, iterate through each and return
 			for k := range original {
-				recursion(map[string]interface{}{k: original[k]}, map[string]interface{}{k: modified[k]}, path, ObjectDiff)
+				err := recursion(map[string]interface{}{k: original[k]}, map[string]interface{}{k: modified[k]}, path, ObjectDiff)
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}
@@ -92,10 +102,21 @@ func recursion(
 		if err != nil {
 			return err
 		}
+	case reflect.String:
+		// if type is string, escape non printable characters
+		original := original.(string)
+		modified := modified.(string)
+		original = strconv.Quote(original)
+		modified = strconv.Quote(modified)
+
+		changed := parsing.ChangedDifference{Path: parsing.CreatePath(*path),
+			OldValue: original, NewValue: modified}
+		ObjectDiff.Changed = append(ObjectDiff.Changed, changed)
 
 	default:
+
 		err := fmt.Errorf("unknown type error, please report as bug." +
-			"\noriginal type: %T \nmodified type: %T\n================== ==" +
+			"\noriginal type: %s \nmodified type: %s\n=====================" +
 				"\noriginal value: %s \nmodified value: %s",
 				originalType, modifiedType, original, modified)
 
@@ -136,7 +157,10 @@ func mapHandler(
 		} else {
 			// Update the working path
 			path = append(path, k)
-			recursion(originalValue, modifiedValue, &path, diff)
+			err := recursion(originalValue, modifiedValue, &path, diff)
+			if err != nil {
+				return err
+			}
 			return nil
 			// Slice handler
 		}
@@ -196,15 +220,25 @@ func sliceHandler(
 	// if length are the same iterate over all and recurse
 	for i := range original {
 		path := parsing.SliceIndex(i, path)
-		recursion(original[i], modified[i], &path, diff)
+		err := recursion(original[i], modified[i], &path, diff)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 
-// Recursion wrapper for primary recursion function to find differences
-func Recursion(original interface{}, modified interface{}, path []string) (*parsing.ConsumableDifference, error) {
+// Recursion iterate over objects to find differences
+func Recursion(
+
+	original interface{},
+	modified interface{},
+	path []string,
+
+) (*parsing.ConsumableDifference, error) {
+
 	var ObjectDiff parsing.ConsumableDifference
 	err := recursion(original, modified, &path, &ObjectDiff)
 	if err != nil {

@@ -1,0 +1,7 @@
+{
+  "Changed": [{
+    "Path": "\"c:\\\\cfn\\\\hooks.d\\\\cfn-auto-reloader.conf\".content.\"Fn::Join\"[1][1]",
+    "NewValue": "triggers=post.update",
+    "OldValue": ["", "triggers=post.update\n"]
+  }]
+}
