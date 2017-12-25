@@ -99,7 +99,7 @@
               },
 
               "C:\\cfn\\RunCommand.bat" : {
-                "content" : "%~1\nIF %ERRORLEVEL% GTR 10 ( exit /b 1 ) else ( exit /b 0 )"
+                "content" : "%~1\n\nIF %ERRORLEVEL% GTR 10 ( exit /b 1 ) else ( exit /b 0 )"
               }
             },
 

@@ -40,6 +40,7 @@ func TestDiff(t *testing.T) {
 		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modPathDeepKey_d.json", "key1.\"key1-1\"", "raw"},
 		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
+		{"cfn_scaledTest_o.json","cfn_scaledTest_m.json", "cfn_scaledTest_d.json", "", "raw"},
 	}
 //
 	/*
@@ -145,6 +146,7 @@ func TestPatch(t *testing.T) {
 		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modPathDeepKey_d.json", "key1.\"key1-1\"", "raw"},
 		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
+		{"cfn_scaledTest_o.json","cfn_scaledTest_m.json", "cfn_scaledTest_d.json", "", "raw"},
 	}
 	//
 
