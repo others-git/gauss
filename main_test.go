@@ -136,7 +136,7 @@ func TestPatch(t *testing.T) {
 		origin   string
 		modified string
 		patch     string
-		skipKeys     string
+		regexp     string
 		output   string
 	}{
 		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
@@ -161,7 +161,7 @@ func TestPatch(t *testing.T) {
 				tc.origin,
 				tc.modified,
 				tc.patch,
-				tc.skipKeys,
+				tc.regexp,
 				tc.output,
 			),
 
@@ -183,8 +183,7 @@ func TestPatch(t *testing.T) {
 					"./tests/"+tc.modified,
 					"./tests/"+tc.origin,
 					tc.output,
-					tc.skipKeys,
-					"",
+					tc.regexp,
 					"",
 					testBuffer,
 				)

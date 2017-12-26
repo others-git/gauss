@@ -14,30 +14,24 @@ import (
 
 
 // Patch Creates a new object given a 'patch' and 'original'
-func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian, skipList []string, regexp *regexp.Regexp) (*interface{}, error) {
+func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian, regSkip *regexp.Regexp) (*interface{}, error) {
 	originalObject := &original.Data
 	var newObject interface{}
 
-
-	var skip []interface{}
-	for i := range skipList {
-		skip = append(skip, skipList[i])
-	}
-
 	// remove
-	newObject, err := iterateRemoved(patch.Removed, *originalObject, skip, regexp)
+	newObject, err := iterateRemoved(patch.Removed, *originalObject, regSkip)
 	if err != nil {
 		return nil, err
 	}
 
 	// add
-	newObject, err = iterateAdded(patch.Added, *originalObject, skip, regexp)
+	newObject, err = iterateAdded(patch.Added, *originalObject, regSkip)
 	if err != nil {
 		return nil, err
 	}
 
 	// change
-	newObject, err = iterateChanged(patch.Changed, *originalObject, skip, regexp)
+	newObject, err = iterateChanged(patch.Changed, *originalObject, regSkip)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +44,6 @@ func iterateRemoved(
 
 	removed []parsing.RemovedDifference,
 	originalObject interface{},
-	skipList []interface{},
 	regSkip *regexp.Regexp,
 
 	) (*interface{}, error) {
@@ -65,12 +58,6 @@ Removing:
 		key := i.Key
 		value := i.Value
 
-		// skip matched strings
-		for _,skip := range skipList {
-			if reflect.DeepEqual(skip, value) {
-				continue Removing
-			}
-		}
 		// skip matched regex
 		if regSkip != nil {
 			res,err := json.Marshal(value)
@@ -114,7 +101,6 @@ func iterateAdded(
 
 	added []parsing.AddedDifference,
 	originalObject interface{},
-	skipList []interface{},
 	regSkip *regexp.Regexp,
 
 	) (*interface{}, error) {
@@ -129,12 +115,6 @@ Adding:
 		key := i.Key
 		value := i.Value
 
-		// skip matched strings
-		for _,skip := range skipList {
-			if reflect.DeepEqual(skip, value) {
-				continue Adding
-			}
-		}
 		// skip matched regex
 		if regSkip != nil {
 
@@ -178,7 +158,6 @@ func iterateChanged(
 
 	changed []parsing.ChangedDifference,
 	originalObject interface{},
-	skipList []interface{},
 	regSkip *regexp.Regexp,
 
 	) (*interface{}, error) {
@@ -193,13 +172,6 @@ Changing:
 		key := i.Key
 		value := i.NewValue
 
-		// skip strings
-		for ii := range skipList {
-			skip := skipList[ii]
-			if reflect.DeepEqual(skip, value) || reflect.DeepEqual(skip, i.OldValue){
-				continue Changing
-			}
-		}
 		// skip matched regex
 		if regSkip != nil {
 			res,err := json.Marshal(value)

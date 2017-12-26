@@ -119,12 +119,6 @@ func main() {
 					EnvVar: "DIFF_PATH",
 				},
 				cli.StringFlag{
-					Name:   "skip, s",
-					Usage:  "comma separated list of values to skip",
-					Value:  "",
-					EnvVar: "SKIP_KEYS",
-				},
-				cli.StringFlag{
 					Name:   "regex-skip, es",
 					Usage:  "regular expression of values to skip",
 					Value:  "",
@@ -149,7 +143,6 @@ func main() {
 					c.String("patch"),
 					c.String("original"),
 					c.String("output"),
-					c.String("skip"),
 					c.String("regex-skip"),
 					c.String("path"),
 					os.Stdout,

@@ -9,7 +9,6 @@ import (
 	"github.com/jmespath/go-jmespath"
 	"fmt"
 	"encoding/json"
-	"strings"
 	"regexp"
 )
 
@@ -124,7 +123,6 @@ func Patch(
 	patch string,
 	original string,
 	output string,
-	skipKeys string,
 	regSkipKeys string,
 	inputDiffPath string,
 	writer io.Writer,
@@ -132,7 +130,6 @@ func Patch(
 ) error {
 	var patcher parsing.ConsumableDifference
 	var originObject parsing.Gaussian
-	var skip []string
 	var regSkip *regexp.Regexp
 	var err error
 
@@ -160,10 +157,6 @@ func Patch(
 		}
 	}
 
-	if len(skipKeys) > 0 {
-		skip = strings.Split(skipKeys, ",")
-	}
-
 	if len(regSkipKeys) > 0 {
 		regSkip,err = regexp.Compile(regSkipKeys)
 		if err != nil {
@@ -171,7 +164,7 @@ func Patch(
 		}
 	}
 
-	newObject, err := operator.Patch(&patcher, &originObject, skip, regSkip)
+	newObject, err := operator.Patch(&patcher, &originObject, regSkip)
 	if err != nil {
 		return err
 	}
