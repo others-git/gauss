@@ -7,32 +7,37 @@ import (
 	"regexp"
 	"strconv"
 	"reflect"
+	"encoding/json"
 )
 
 // https://github.com/golang/go/wiki/SliceTricks
 
 
 // Patch Creates a new object given a 'patch' and 'original'
-func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*interface{}, error) {
+func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian, skipList []string, regexp *regexp.Regexp) (*interface{}, error) {
 	originalObject := &original.Data
-
 	var newObject interface{}
-	// Updated order Removed > Added > Changed > Indexes
+
+
+	var skip []interface{}
+	for i := range skipList {
+		skip = append(skip, skipList[i])
+	}
 
 	// remove
-	newObject, err := iterateRemoved(patch.Removed, *originalObject)
+	newObject, err := iterateRemoved(patch.Removed, *originalObject, skip, regexp)
 	if err != nil {
 		return nil, err
 	}
 
 	// add
-	newObject, err = iterateAdded(patch.Added, *originalObject)
+	newObject, err = iterateAdded(patch.Added, *originalObject, skip, regexp)
 	if err != nil {
 		return nil, err
 	}
 
-	// alter
-	newObject, err = iterateChanged(patch.Changed, *originalObject)
+	// change
+	newObject, err = iterateChanged(patch.Changed, *originalObject, skip, regexp)
 	if err != nil {
 		return nil, err
 	}
@@ -41,15 +46,41 @@ func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian) (*in
 }
 
 // iterate over objects to remove
-func iterateRemoved(removed []parsing.RemovedDifference, originalObject interface{}) (*interface{}, error) {
+func iterateRemoved(
+
+	removed []parsing.RemovedDifference,
+	originalObject interface{},
+	skipList []interface{},
+	regSkip *regexp.Regexp,
+
+	) (*interface{}, error) {
+
 	var newObject interface{}
 
+Removing:
 	// iterate over removed objects
 	for _, i := range removed {
 
 		originPath := i.Path
 		key := i.Key
 		value := i.Value
+
+		// skip matched strings
+		for _,skip := range skipList {
+			if reflect.DeepEqual(skip, value) {
+				continue Removing
+			}
+		}
+		// skip matched regex
+		if regSkip != nil {
+			res,err := json.Marshal(value)
+			if err != nil {
+				return nil, err
+			}
+			if regSkip.MatchString(string(res)) {
+				continue Removing
+			}
+		}
 
 		// validate jmespath
 		_, err :=  jmespath.Compile(originPath)
@@ -79,9 +110,18 @@ func iterateRemoved(removed []parsing.RemovedDifference, originalObject interfac
 }
 
 // iterate over objects to add
-func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (*interface{}, error) {
+func iterateAdded(
+
+	added []parsing.AddedDifference,
+	originalObject interface{},
+	skipList []interface{},
+	regSkip *regexp.Regexp,
+
+	) (*interface{}, error) {
+
 	var newObject interface{}
 
+Adding:
 	// Iterate over added objects
 	for _, i := range added {
 
@@ -89,6 +129,24 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 		key := i.Key
 		value := i.Value
 
+		// skip matched strings
+		for _,skip := range skipList {
+			if reflect.DeepEqual(skip, value) {
+				continue Adding
+			}
+		}
+		// skip matched regex
+		if regSkip != nil {
+
+			res,err := json.Marshal(value)
+			if err != nil {
+				return nil, err
+			}
+
+			if regSkip.MatchString(string(res)) {
+				continue Adding
+			}
+		}
 		// validate jmespath
 		_, err :=  jmespath.Compile(originPath)
 		if err != nil {
@@ -116,15 +174,48 @@ func iterateAdded(added []parsing.AddedDifference, originalObject interface{}) (
 }
 
 // iterate over objects to change
-func iterateChanged(changed []parsing.ChangedDifference, originalObject interface{}) (*interface{}, error) {
+func iterateChanged(
+
+	changed []parsing.ChangedDifference,
+	originalObject interface{},
+	skipList []interface{},
+	regSkip *regexp.Regexp,
+
+	) (*interface{}, error) {
+
 	var newObject interface{}
 
+Changing:
 	// Iterate over added objects
 	for _, i := range changed {
 
 		originPath := i.Path
 		key := i.Key
 		value := i.NewValue
+
+		// skip strings
+		for ii := range skipList {
+			skip := skipList[ii]
+			if reflect.DeepEqual(skip, value) || reflect.DeepEqual(skip, i.OldValue){
+				continue Changing
+			}
+		}
+		// skip matched regex
+		if regSkip != nil {
+			res,err := json.Marshal(value)
+			if err != nil {
+				return nil, err
+			}
+			res2,err := json.Marshal(i.OldValue)
+			if err != nil {
+				return nil, err
+			}
+			if regSkip.MatchString(string(res)) || regSkip.MatchString(string(res2)) {
+				continue Changing
+			}
+		}
+
+		// skip regexp
 
 		// slice up path
 		slicedPath := parsing.PathSplit(originPath)
@@ -163,8 +254,11 @@ func removeChild(path []string, key string, value interface{}, object interface{
 
 	// get working directory based on path
 	objectDir, err := compiledPath.Search(object)
-	if err != nil {
-		return nil, err
+	if err != nil || objectDir == nil {
+		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
+			"\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
+			"::::::::::::::::::::::::::::::::::::::\n", path, objectDir)
+		return nil, nErr
 	}
 
 	// determine what type of object to remove
@@ -215,15 +309,16 @@ func replaceChild(path []string, key string, value interface{}, object interface
 	var newObject interface{}
 	var err error
 
-	valueType := reflect.TypeOf(value).Kind()
+	valueType := reflect.TypeOf(value).String()
 	switch valueType{
-	case reflect.String:
+	case "string":
 		val := value.(string)
 
 		value,err = strconv.Unquote(val)
 		if err != nil {
 			value = val
 		}
+	default:
 	}
 
 
@@ -234,14 +329,14 @@ func replaceChild(path []string, key string, value interface{}, object interface
 	}
 
 	// get working directory based on path
-
-	objectDir, err := compiledPath.Search(object)
+	usePath := parsing.CreatePath(path)
+	//objectDir, err := compiledPath.Search(object)
+	objectDir, err := jmespath.Search(usePath, object)
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-				"\nerror replacing value\n" +
-				"path expression returned nil\nraw path: %v\n" +
-				"compiled path: %v\nresult: %v\n\n" +
-				"::::::::::::::::::::::::::::::::::::::\n", path, *compiledPath, objectDir)
+				"\nerror: %v\nraw path: %v\n" +
+				"compiled path: %v\nresult: %v\nstack: %s\n\n" +
+				"::::::::::::::::::::::::::::::::::::::\n", err, strconv.Quote(usePath), *compiledPath, objectDir, object)
 		return nil, nErr
 	}
 
@@ -419,7 +514,6 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 
 	// handle slice within the path
 	if reflect.TypeOf(newObject).Kind() == reflect.Slice {
-		fmt.Println("is slice")
 		if index == nil {
 			nErr := fmt.Errorf("operating stack is type slice but path does not contain index")
 			return nil, nErr
@@ -430,8 +524,7 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 		// remove any quoted values from the key name
 		objectName,err := strconv.Unquote(lastItem)
 		if err != nil {
-			//fmt.Printf("\n=====\nkey name: %s\noriginal name?: %s" +
-			//	"\nerror: %s\n=====\n\n", objectName, lastItem,err)
+
 			newObject.(map[string]interface{})[lastItem] = child
 		} else {
 			newObject.(map[string]interface{})[objectName] = child

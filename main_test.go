@@ -60,7 +60,7 @@ func TestDiff(t *testing.T) {
 
 			func(t *testing.T) {
 
-				// Read and unmarshal the expected output.
+				// ReadFile and unmarshal the expected output.
 				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.diff)
 				require.Nil(err, "The test diff should be readable.")
 
@@ -77,10 +77,11 @@ func TestDiff(t *testing.T) {
 					"./tests/"+tc.modified,
 					tc.output,
 					tc.path,
+					"",
 					testBuffer,
 				)
 
-				// Read and unmarshal the actual output.
+				// ReadFile and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
 				require.Nil(err, "The test buffer should be readable")
 
@@ -166,7 +167,7 @@ func TestPatch(t *testing.T) {
 
 			func(t *testing.T) {
 
-				// Read and unmarshal the expected output.
+				// ReadFile and unmarshal the expected output.
 				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.modified)
 				require.Nil(err, "The test diff should be readable.")
 
@@ -183,10 +184,12 @@ func TestPatch(t *testing.T) {
 					"./tests/"+tc.origin,
 					tc.output,
 					tc.skipKeys,
+					"",
+					"",
 					testBuffer,
 				)
 
-				// Read and unmarshal the actual output.
+				// ReadFile and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
 				require.Nil(err, "The test buffer should be readable")
 
