@@ -47,6 +47,7 @@ func Diff(
 
 
 	// Validate jmespath expression and move into path if exists
+
 	if len(inputDiffPath) > 0 {
 		_, err :=  jmespath.Compile(inputDiffPath)
 		if err != nil {
@@ -137,7 +138,6 @@ func Patch(
 	//parsing.Format(patcher)
 
 	originObject.ReadFile(original)
-
 
 
 	// Validate jmespath expression and move into path if exists

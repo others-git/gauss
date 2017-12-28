@@ -13,176 +13,153 @@ import (
 // https://github.com/golang/go/wiki/SliceTricks
 
 
+type Patched struct{
+	NewObject interface{}
+	Patch *parsing.ConsumableDifference
+	Skip *regexp.Regexp
+}
+
 // Patch Creates a new object given a 'patch' and 'original'
 func Patch(patch *parsing.ConsumableDifference, original *parsing.Gaussian, regSkip *regexp.Regexp) (*interface{}, error) {
-	originalObject := &original.Data
 	var newObject interface{}
+	P := Patched{newObject, patch, regSkip}
+	P.NewObject = original.Data
+	P.patch()
+
+	return &P.NewObject, nil
+}
+
+// Patch Creates a new object given a 'patch' and 'original'
+func (p *Patched) patch() (*interface{}, error) {
+
+	var err error
 
 	// remove
-	newObject, err := iterateRemoved(patch.Removed, *originalObject, regSkip)
+	err = p.iterateRemoved()
 	if err != nil {
 		return nil, err
 	}
 
 	// add
-	newObject, err = iterateAdded(patch.Added, *originalObject, regSkip)
+	err = p.iterateAdded()
 	if err != nil {
 		return nil, err
 	}
-
+	
 	// change
-	newObject, err = iterateChanged(patch.Changed, *originalObject, regSkip)
+	err = p.iterateChanged()
 	if err != nil {
 		return nil, err
 	}
 
-	return &newObject, nil
+	return &p.NewObject, nil
 }
 
 // iterate over objects to remove
-func iterateRemoved(
-
-	removed []parsing.RemovedDifference,
-	originalObject interface{},
-	regSkip *regexp.Regexp,
-
-	) (*interface{}, error) {
-
-	var newObject interface{}
-
-Removing:
+func (p *Patched) iterateRemoved() error {
+	Removing:
 	// iterate over removed objects
-	for _, i := range removed {
+	for _, i := range p.Patch.Removed {
 
 		originPath := i.Path
 		key := i.Key
 		value := i.Value
 
 		// skip matched regex
-		if regSkip != nil {
+		if p.Skip != nil {
 			res,err := json.Marshal(value)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			if regSkip.MatchString(string(res)) {
+			if p.Skip.MatchString(string(res)) {
 				continue Removing
 			}
 		}
 
-		// validate jmespath
-		_, err :=  jmespath.Compile(originPath)
-		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, originPath)
-			return nil, nErr
-		}
-
 		// slice up path
 		slicedPath := parsing.PathSplit(originPath)
 
 		// create child object
-		childObject, err := removeChild(slicedPath, key, value, originalObject)
+		childObject, err := p.removeChild(slicedPath, key, value, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
+		_, trimPath := trimIndex(slicedPath)
 		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		_, err = p.addParent(trimPath, *childObject, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
-
 	}
 
-	return &newObject, nil
+	return nil
 }
 
 // iterate over objects to add
-func iterateAdded(
-
-	added []parsing.AddedDifference,
-	originalObject interface{},
-	regSkip *regexp.Regexp,
-
-	) (*interface{}, error) {
-
-	var newObject interface{}
-
-Adding:
+func (p *Patched) iterateAdded() error {
+	Adding:
 	// Iterate over added objects
-	for _, i := range added {
+	for _, i := range p.Patch.Added {
 
 		originPath := i.Path
 		key := i.Key
 		value := i.Value
 
 		// skip matched regex
-		if regSkip != nil {
+		if p.Skip != nil {
 
 			res,err := json.Marshal(value)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			if regSkip.MatchString(string(res)) {
+			if p.Skip.MatchString(string(res)) {
 				continue Adding
 			}
-		}
-		// validate jmespath
-		_, err :=  jmespath.Compile(originPath)
-		if err != nil {
-			nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, originPath)
-			return nil, nErr
 		}
 
 		// slice up path
 		slicedPath := parsing.PathSplit(originPath)
 
 		// create child object
-		childObject, err := createChild(slicedPath, key, value, originalObject)
+		childObject, err := p.createChild(slicedPath, key, value, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
+		_, trimPath := trimIndex(slicedPath)
 		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		_, err = p.addParent(trimPath, *childObject, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return &newObject, nil
+	return nil
 }
 
 // iterate over objects to change
-func iterateChanged(
-
-	changed []parsing.ChangedDifference,
-	originalObject interface{},
-	regSkip *regexp.Regexp,
-
-	) (*interface{}, error) {
-
-	var newObject interface{}
-
-Changing:
+func (p *Patched) iterateChanged() error {
+	Changing:
 	// Iterate over added objects
-	for _, i := range changed {
+	for _, i := range p.Patch.Changed {
 
 		originPath := i.Path
 		key := i.Key
 		value := i.NewValue
 
 		// skip matched regex
-		if regSkip != nil {
+		if p.Skip != nil {
 			res,err := json.Marshal(value)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			res2,err := json.Marshal(i.OldValue)
 			if err != nil {
-				return nil, err
+				return err
 			}
-			if regSkip.MatchString(string(res)) || regSkip.MatchString(string(res2)) {
+			if p.Skip.MatchString(string(res)) || p.Skip.MatchString(string(res2)) {
 				continue Changing
 			}
 		}
@@ -192,44 +169,46 @@ Changing:
 		// slice up path
 		slicedPath := parsing.PathSplit(originPath)
 
+
 		// create child object
-		childObject, err := replaceChild(slicedPath, key, value, originalObject)
+		childObject, err := p.replaceChild(slicedPath, key, value, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
+		_, trimPath := trimIndex(slicedPath)
 		// wrap child object to create new object
-		newObject, err = addParent(slicedPath, *childObject, originalObject)
+		_, err = p.addParent(trimPath, *childObject, p.NewObject)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 	}
 
-	return &newObject, nil
+	return nil
 }
 
 ////////
 
-func removeChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
+func (p *Patched) removeChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
 
 	var orphan interface{}
 	var newObject interface{}
 
-	// check path for index
-	index, _, compiledPath, err := makePath(path)
-	if err != nil {
-		return nil, err
-	}
-
 	objectName := path[len(path)-1]
 
+	index,tmp := trimIndex(path)
+
 	// get working directory based on path
-	objectDir, err := compiledPath.Search(object)
+	usePath := parsing.CreatePath(tmp)
+
+	//objectDir, err := compiledPath.Search(object)
+	objectDir, err := jmespath.Search(usePath, object)
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-			"\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
-			"::::::::::::::::::::::::::::::::::::::\n", path, objectDir)
+			"\nerror: %v\nraw path: %v\n" +
+			"result: %v\nstack: %s\n\n" +
+			"::::::::::::::::::::::::::::::::::::::\n", err, strconv.Quote(usePath), objectDir, object)
 		return nil, nErr
 	}
 
@@ -243,13 +222,14 @@ func removeChild(path []string, key string, value interface{}, object interface{
 		orphan = value
 	}
 
-	// replace logic for slice value
+		// replace logic for slice value
 	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
 		// cast to slice of interfaces
 		objectSlice := objectDir.([]interface{})
+
 		// if the object to orphan equals what's in the original object, drop it
 		if reflect.DeepEqual(objectSlice[*index], orphan) {
-			objectSlice = append(objectSlice[:*index], objectSlice[*index+1:])
+			objectSlice = append(objectSlice[:*index], objectSlice[*index+1:]...)
 		} else {
 			nErr := fmt.Errorf("object to remove: %s\ndoes not match existing: %s",
 				orphan, objectSlice[*index])
@@ -271,12 +251,11 @@ func removeChild(path []string, key string, value interface{}, object interface{
 		}
 		newObject = objectMap
 	}
-
 	return &newObject, nil
 }
 
 // same as create but replaces slice index rather than inserting
-func replaceChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
+func (p *Patched) replaceChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
 
 	var newObject interface{}
 	var err error
@@ -292,28 +271,40 @@ func replaceChild(path []string, key string, value interface{}, object interface
 		}
 	default:
 	}
+	/*
 
+	_,tmp := trimIndex(path)
 
 	// create index and jmespath
-	index, _, compiledPath, err := makePath(path)
+	index, _, compiledPath, err := makePath(tmp)
+	if err != nil {
+		return nil, err
+	}
+	*/
+
+	// check path for index
+	index,_, compiledPath, err := makePath(path)
 	if err != nil {
 		return nil, err
 	}
 
-	// get working directory based on path
-	usePath := parsing.CreatePath(path)
-	//objectDir, err := compiledPath.Search(object)
-	objectDir, err := jmespath.Search(usePath, object)
+	objectDir, err := compiledPath.Search(object)
+	tmpObject := objectDir
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
 				"\nerror: %v\nraw path: %v\n" +
 				"compiled path: %v\nresult: %v\nstack: %s\n\n" +
-				"::::::::::::::::::::::::::::::::::::::\n", err, strconv.Quote(usePath), *compiledPath, objectDir, object)
+				"::::::::::::::::::::::::::::::::::::::\n", err, path, *compiledPath, objectDir, object)
 		return nil, nErr
 	}
 
 	// determine what type of object we need to make - NEED MORE CHECKS
 	if key != "" {
+		// step into slice if valid
+		if index != nil {
+			objectDir = objectDir.([]interface{})[*index]
+		}
+
 		// create k[v] type and return
 		newChild := map[string]interface{}{
 			key: value,
@@ -334,6 +325,7 @@ func replaceChild(path []string, key string, value interface{}, object interface
 	// replace logic for slice value
 	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
 		// cast the object since it's a slice
+
 		objectDir := objectDir.([]interface{})
 
 		// create new slice
@@ -346,12 +338,16 @@ func replaceChild(path []string, key string, value interface{}, object interface
 
 		newObject = objectSlice
 	}
+	if index != nil {
+		tmpObject.([]interface{})[*index] = newObject
+		newObject = tmpObject
+	}
 
 	return &newObject, nil
 }
 
 // creates new child object from key and value
-func createChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
+func (p *Patched) createChild(path []string, key string, value interface{}, object interface{}) (*interface{}, error) {
 
 	var newObject interface{}
 	var err error
@@ -375,16 +371,23 @@ func createChild(path []string, key string, value interface{}, object interface{
 		return nil, err
 	}
 
-	// get working directory based on path
 	objectDir, err := compiledPath.Search(object)
+	tmpObject := objectDir
 	if err != nil || objectDir == nil {
 		nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
 			"\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
 			"::::::::::::::::::::::::::::::::::::::\n", *compiledPath, objectDir)
 		return nil, nErr
 	}
+
 	// determine what type of object we need to make - NEED MORE CHECKS
 	if key != "" {
+
+		// step into slice if valid
+		if index != nil {
+			objectDir = objectDir.([]interface{})[*index]
+		}
+
 		// create k[v] type and return
 		newChild := map[string]interface{}{
 			key: value,
@@ -404,6 +407,7 @@ func createChild(path []string, key string, value interface{}, object interface{
 	// Update logic for slice value - NEED MORE CHECKS
 	if reflect.TypeOf(objectDir).Kind() == reflect.Slice {
 		//TODO: do thing with index
+
 		// cast to slice of interfaces
 		objectSlice := objectDir.([]interface{})
 
@@ -424,14 +428,18 @@ func createChild(path []string, key string, value interface{}, object interface{
 			objectSlice[*index] = newObject
 			newObject = objectSlice
 		}
+	}
 
+	if index != nil {
+		tmpObject.([]interface{})[*index] = newObject
+		newObject = tmpObject
 	}
 
 	return &newObject, nil
 }
 
 // recreate the template with the updated child object
-func addParent(path []string, object interface{}, stack interface{}) (*interface{}, error) {
+func (p *Patched) addParent(path []string, lastObject interface{}, stack interface{}) (*interface{}, error) {
 	var newObject interface{}
 	var child interface{}
 
@@ -446,23 +454,23 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 	pathLen := len(tmp)-1
 
 	// check if there is a multi index item in the path
-	multIndexReg := regexp.MustCompile("\\[[\\d]\\]\\[[\\d]\\]+")
-	allIndexReg := regexp.MustCompile("\\[[\\d]\\]+")
-	if 	multIndexReg.MatchString(lastItem) {
+	multiIndexReg := regexp.MustCompile("\\[[\\d]\\]\\[[\\d]\\]+")
+
+	if 	multiIndexReg.MatchString(lastItem) {
 		var err error
 
 		// parse all nested slices
-		child, err = nestedSlice(path, object, stack)
+		child, err = p.nestedSlice(path, lastObject, stack)
 		if err != nil {
 			return nil, err
 		}
 		// replace indexes to set as value
-		lastItem = allIndexReg.ReplaceAllString(lastItem, "")
+		lastItem = regexp.MustCompile("\\[[\\d]\\]+").ReplaceAllString(lastItem, "")
 		lessPath = append(lessPath, lastItem)
 
-		return addParent(lessPath, child, stack)
+		return p.addParent(lessPath, child, stack)
 	} else {
-		child = object
+		child = lastObject
 	}
 
 	// pull parse the sliced path for some goodies
@@ -476,7 +484,7 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 		newObject, err = compiledPath.Search(stack)
 		if err != nil || newObject == nil {
 			nErr := fmt.Errorf("\n::::::::::::::::::::::::::::::::::::::\n" +
-				"\nerror reconstructing object body\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
+				"\nerror reconstructing lastObject body\npath expression returned nil\nquery path: %v\nresult: %v\n\n" +
 					"::::::::::::::::::::::::::::::::::::::\n", *compiledPath, newObject)
 			return nil, nErr
 		}
@@ -485,38 +493,57 @@ func addParent(path []string, object interface{}, stack interface{}) (*interface
 	}
 
 	// handle slice within the path
-	if reflect.TypeOf(newObject).Kind() == reflect.Slice {
+	switch reflect.TypeOf(newObject).String() {
+
+	case "slice":
+
 		if index == nil {
 			nErr := fmt.Errorf("operating stack is type slice but path does not contain index")
 			return nil, nErr
 		}
 		newObject.([]interface{})[*index] = child
-	}	else {
 
-		// remove any quoted values from the key name
-		objectName,err := strconv.Unquote(lastItem)
-		if err != nil {
+	default:
 
-			newObject.(map[string]interface{})[lastItem] = child
+		if regexp.MustCompile("\\[[\\d]\\]").MatchString(lastItem) {
+
+			// if last item in path has an index value we have to unwrap and update the slice underneath
+			tmp := []string{lastItem}
+			indx, tmp := trimIndex(tmp)
+			tmpObj := newObject.(map[string]interface{})[tmp[0]]
+
+
+			tmpObj.([]interface{})[*indx] = child
+			newObject.(map[string]interface{})[tmp[0]] = tmpObj
+
 		} else {
-			newObject.(map[string]interface{})[objectName] = child
+
+			// remove any quoted values from the key name
+			objectName,err := strconv.Unquote(lastItem)
+			if err != nil {
+				newObject.(map[string]interface{})[lastItem] = child
+			} else {
+				newObject.(map[string]interface{})[objectName] = child
+			}
 		}
 	}
 
 	if pathLen > 0 {
-		return addParent(lessPath, newObject, stack)
+		return p.addParent(lessPath, newObject, stack)
 	}
+
+	p.NewObject = newObject
+
 	return &newObject, nil
 }
 
 // if a path has nested slices, eg key[1][2] recurse over them
-func nestedSlice(path []string, child interface{}, stack interface{}) (*interface{}, error) {
+func (p *Patched) nestedSlice(path []string, child interface{}, stack interface{}) (*interface{}, error) {
 
 
 	_, tmpPath := trimIndex(path)
-	index, _, compiledPath, _:= makePath(*tmpPath)
-	cln := *tmpPath
-	lastItem := cln[len(cln)-1]
+	index, _, compiledPath, _:= makePath(tmpPath)
+	lastItem := tmpPath[len(tmpPath)-1]
 
 
 	// get working directory based on path
@@ -533,7 +560,7 @@ func nestedSlice(path []string, child interface{}, stack interface{}) (*interfac
 
 	multIndexReg := regexp.MustCompile("^\"?.*\"?\\[[\\d]]\\[[\\d]\\]+")
 	if 	multIndexReg.MatchString(lastItem) {
-		return nestedSlice(*tmpPath, objectSlice, stack)
+		return p.nestedSlice(tmpPath, objectSlice, stack)
 	}
 
 	return &objectDir, nil
@@ -557,15 +584,17 @@ func makePath(path []string) (*int, *string, *jmespath.JMESPath, error) {
 	//*location = regexp.MustCompile("\\\"").ReplaceAllString(*location, "")
 
 
+	location = regexp.MustCompile("\\[[\\d]\\]+$").ReplaceAllString(location, "")
+
 	index, tmp := trimIndex(clone)
 
 	// combine the sliced path into jmespath format
-	stringPath := parsing.CreatePath(*tmp)
+	stringPath := parsing.CreatePath(tmp)
 
 	// validate jmespath
 	compiled, err :=  jmespath.Compile(stringPath)
 	if err != nil {
-		nErr := fmt.Errorf("failed to compile provided path: %T\npath: %s", err, stringPath)
+		nErr := fmt.Errorf("failed to compile provided path: %T\npath len: %v", err, len(stringPath))
 		return nil, nil, nil, nErr
 	}
 
@@ -582,7 +611,7 @@ func mapReduce(a map[string]interface{}, b map[string]interface{}) map[string]in
 }
 
 // trim last index off item and return the int
-func trimIndex(path []string) (*int, *[]string) {
+func trimIndex(path []string) (*int, []string) {
 
 	// copy path into tmp to not mess with path
 	tmp := make([]string, len(path))
@@ -605,11 +634,11 @@ func trimIndex(path []string) (*int, *[]string) {
 
 		tmp[len(tmp)-1] = locationName
 
-		return &index, &tmp
+		return &index, tmp
 	}
 
 
-	return nil, &tmp
+	return nil, tmp
 }
 
 
