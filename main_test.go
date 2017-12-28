@@ -40,6 +40,7 @@ func TestDiff(t *testing.T) {
 		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modPathDeepKey_d.json", "key1.\"key1-1\"", "raw"},
 		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
+		{"cfn_scaledTest_o.json","cfn_scaledTest_m.json", "cfn_scaledTest_d.json", "", "raw"},
 	}
 //
 	/*
@@ -59,7 +60,7 @@ func TestDiff(t *testing.T) {
 
 			func(t *testing.T) {
 
-				// Read and unmarshal the expected output.
+				// ReadFile and unmarshal the expected output.
 				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.diff)
 				require.Nil(err, "The test diff should be readable.")
 
@@ -76,10 +77,11 @@ func TestDiff(t *testing.T) {
 					"./tests/"+tc.modified,
 					tc.output,
 					tc.path,
+					"",
 					testBuffer,
 				)
 
-				// Read and unmarshal the actual output.
+				// ReadFile and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
 				require.Nil(err, "The test buffer should be readable")
 
@@ -134,7 +136,7 @@ func TestPatch(t *testing.T) {
 		origin   string
 		modified string
 		patch     string
-		skipKeys     string
+		regexp     string
 		output   string
 	}{
 		{"addKey_o.json", "addKey_m.json", "addKey_d.json", "", "raw"},
@@ -145,6 +147,7 @@ func TestPatch(t *testing.T) {
 		{"modArray_o.json", "modArray_m.json", "modArray_d.json", "", "raw"},
 		{"modDeepKey_o.json", "modDeepKey_m.json", "modPathDeepKey_d.json", "key1.\"key1-1\"", "raw"},
 		{"modArrayKeepPath_o.json", "modArrayKeepPath_m.json", "modArrayKeepPath_d.json", "Outputs.Default[5]", "raw"},
+		{"cfn_scaledTest_o.json","cfn_scaledTest_m.json", "cfn_scaledTest_d.json", "", "raw"},
 	}
 	//
 
@@ -158,13 +161,13 @@ func TestPatch(t *testing.T) {
 				tc.origin,
 				tc.modified,
 				tc.patch,
-				tc.skipKeys,
+				tc.regexp,
 				tc.output,
 			),
 
 			func(t *testing.T) {
 
-				// Read and unmarshal the expected output.
+				// ReadFile and unmarshal the expected output.
 				expectedJSON, err := ioutil.ReadFile("./tests/" + tc.modified)
 				require.Nil(err, "The test diff should be readable.")
 
@@ -180,11 +183,12 @@ func TestPatch(t *testing.T) {
 					"./tests/"+tc.modified,
 					"./tests/"+tc.origin,
 					tc.output,
-					tc.skipKeys,
+					tc.regexp,
+					"",
 					testBuffer,
 				)
 
-				// Read and unmarshal the actual output.
+				// ReadFile and unmarshal the actual output.
 				result, err := ioutil.ReadAll(testBuffer)
 				require.Nil(err, "The test buffer should be readable")
 

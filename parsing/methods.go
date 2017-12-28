@@ -45,8 +45,8 @@ func hash(b []byte) uint32 {
 CONSUMABLEDIFFERENCE TYPE FUNCTIONS
  */
 
-// Read helper to read file that handles bom and unmarshals for our patch
-func (c *ConsumableDifference) Read(file string) error {
+// ReadFile read file and handle bom
+func (c *ConsumableDifference) ReadFile(file string) error {
 
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
@@ -61,12 +61,32 @@ func (c *ConsumableDifference) Read(file string) error {
 		return nErr
 	}
 
-	if err := json.Unmarshal(o, &c); err != nil {
+	d := json.NewDecoder(bytes.NewBuffer(o))
+	d.UseNumber()
+	if err := d.Decode(&c); err != nil {
 		return err
 	}
 
 	return nil
 }
+
+// Read byte slice and handle bom
+func (c *ConsumableDifference) Read(input []byte) error {
+
+	// because go json refuses to deal with bom we need to strip it out
+	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(input)))
+	if err != nil {
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
+		return nErr
+	}
+	d := json.NewDecoder(bytes.NewBuffer(o))
+	d.UseNumber()
+	if err := d.Decode(&c); err != nil {
+		return err
+	}
+	return nil
+}
+
 
 // Sort each key in our object so marshaled object is also consistent
 func (c *ConsumableDifference) Sort() error {
@@ -129,8 +149,8 @@ GAUSSIAN TYPE METHODS
 
  */
 
- // Read gaussian type reader method for raw json or yaml
-func (g *Gaussian) Read(file string) error {
+ // ReadFile gaussian type reader method for raw json or yaml
+func (g *Gaussian) ReadFile(file string) error {
 	var store interface{}
 	// because go json refuses to deal with bom we need to strip it out
 	f, err := ioutil.ReadFile(file)
@@ -146,7 +166,9 @@ func (g *Gaussian) Read(file string) error {
 	}
 
 	// We try to determine if json or yaml based on error :/
-	err = json.Unmarshal(o, &store)
+	d := json.NewDecoder(bytes.NewBuffer(o))
+	d.UseNumber()
+	err = d.Decode(&store)
 	if err == nil {
 		g.Data = store
 		g.Type = "JSON"
@@ -162,6 +184,42 @@ func (g *Gaussian) Read(file string) error {
 	}
 	return nil
 }
+
+// ReadFile read byte slice and handle bom
+func (g *Gaussian) Read(input []byte) error {
+	var store interface{}
+
+	// because go json refuses to deal with bom we need to strip it out
+	o, err := ioutil.ReadAll(utfbom.SkipOnly(bytes.NewReader(input)))
+	if err != nil {
+		nErr := fmt.Errorf("error encountered while trying to skip BOM: %T", err)
+		return nErr
+	}
+
+
+
+	// We try to determine if json or yaml based on error :/
+	d := json.NewDecoder(bytes.NewBuffer(o))
+	d.UseNumber()
+	err = d.Decode(&store)
+	if err == nil {
+		g.Data = store
+		g.Type = "JSON"
+	} else {
+		err = yaml.Unmarshal(o, &store)
+
+
+		if err == nil {
+			g.Data = store
+			g.Type = "YAML"
+		} else {
+			err := errors.New("unable to parse file, confirm if valid JSON/YAML")
+			return err
+		}
+	}
+	return nil
+}
+
 
 // Write marshals data based on type and outputs to writer
 func (g *Gaussian) Write(output io.Writer) error {

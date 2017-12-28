@@ -9,6 +9,7 @@ import (
 	"github.com/jmespath/go-jmespath"
 	"fmt"
 	"encoding/json"
+	"regexp"
 )
 
 /*
@@ -22,6 +23,7 @@ func Diff(
 	modified string,
 	output string,
 	inputDiffPath string,
+	regSkipKeys string,
 	writer io.Writer,
 
 ) error {
@@ -29,21 +31,23 @@ func Diff(
 	var jsonOriginal, jsonModified parsing.Gaussian
 	var path []string
 	var objectDiff *parsing.ConsumableDifference
+	var regSkip *regexp.Regexp
 	var err error
 
 
 	/* TODO WE WANT TO DO ALL OUR INIT STUFF IN THIS AREA */
 
-	if err := jsonOriginal.Read(origin) ; err != nil {
+	if err := jsonOriginal.ReadFile(origin) ; err != nil {
 		return err
 	}
 
-	if err := jsonModified.Read(modified) ; err != nil {
+	if err := jsonModified.ReadFile(modified) ; err != nil {
 		return err
 	}
 
 
 	// Validate jmespath expression and move into path if exists
+
 	if len(inputDiffPath) > 0 {
 		_, err :=  jmespath.Compile(inputDiffPath)
 		if err != nil {
@@ -52,7 +56,7 @@ func Diff(
 		}
 		jsonOriginal.Data,err = jmespath.Search(inputDiffPath, jsonOriginal.Data)
 		if jsonOriginal.Data == nil {
-			err := errors.New("difference path returned nil object")
+			err := fmt.Errorf("path %v returned nil for %v", inputDiffPath, origin)
 			return err
 		} else if err != nil {
 			nErr := fmt.Errorf("error pathing to object in original: %T", err)
@@ -60,11 +64,19 @@ func Diff(
 		}
 		jsonModified.Data,err = jmespath.Search(inputDiffPath, jsonModified.Data)
 		if jsonModified.Data == nil {
-			err := errors.New("difference path returned nil object")
+			err := fmt.Errorf("path %v returned nil for %v", inputDiffPath, modified)
 			return err
 		} else if err != nil {
 			nErr := fmt.Errorf("error pathing to object in modified: %T", err)
 			return nErr
+		}
+	}
+
+	// compile provided regexp if provided
+	if len(regSkipKeys) > 0 {
+		regSkip,err = regexp.Compile(regSkipKeys)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -75,7 +87,9 @@ func Diff(
 		objectDiff, err = operator.Recursion(
 			jsonOriginal.Data.(map[string]interface{}),
 			jsonModified.Data.(map[string]interface{}),
-			path)
+			path,
+			regSkip,
+			)
 		if err != nil {
 			return err
 		}
@@ -110,19 +124,47 @@ func Patch(
 	patch string,
 	original string,
 	output string,
-	skipKeys string,
+	regSkipKeys string,
+	inputDiffPath string,
 	writer io.Writer,
 
 ) error {
 	var patcher parsing.ConsumableDifference
 	var originObject parsing.Gaussian
+	var regSkip *regexp.Regexp
+	var err error
 
-	patcher.Read(patch)
+	patcher.ReadFile(patch)
 	//parsing.Format(patcher)
 
-	originObject.Read(original)
+	originObject.ReadFile(original)
 
-	newObject, err := operator.Patch(&patcher, &originObject)
+
+	// Validate jmespath expression and move into path if exists
+	if len(inputDiffPath) > 0 {
+		_, err :=  jmespath.Compile(inputDiffPath)
+		if err != nil {
+			nErr := fmt.Errorf("failed to compile provided path: %T", err)
+			return nErr
+		}
+		originObject.Data,err = jmespath.Search(inputDiffPath, originObject.Data)
+		if originObject.Data == nil {
+			err := errors.New("difference path returned nil object")
+			return err
+		} else if err != nil {
+			nErr := fmt.Errorf("error pathing to object in original: %T", err)
+			return nErr
+		}
+	}
+
+	if len(regSkipKeys) > 0 {
+		regSkip,err = regexp.Compile(regSkipKeys)
+		if err != nil {
+			return err
+		}
+	}
+
+	newObject, err := operator.Patch(&patcher, &originObject, regSkip)
 	if err != nil {
 		return err
 	}

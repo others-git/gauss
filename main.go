@@ -45,7 +45,7 @@ func main() {
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
-					Name:   "diff-path",
+					Name:   "path",
 					Usage:  "Preform diff on specific bath, given in jmespath",
 					Value:  "",
 					EnvVar: "DIFF_PATH",
@@ -55,6 +55,12 @@ func main() {
 					Usage: "Because some roads you shouldn't go down. Because maps used to say, \"There be dragons here.\" Now they don't. But that don't mean the dragons aren't there.",
 					Value: "",
 				},
+				cli.StringFlag{
+				Name:   "regex-skip, es",
+				Usage:  "regular expression of values to skip",
+				Value:  "",
+				EnvVar: "SKIP_KEYS",
+			},
 			},
 			Action: func(c *cli.Context) error {
 
@@ -74,7 +80,8 @@ func main() {
 					c.String("origin"),
 					c.String("modified"),
 					c.String("output"),
-					c.String("diff-path"),
+					c.String("path"),
+					c.String("regex-skip"),
 					os.Stdout,
 				)
 			},
@@ -100,14 +107,20 @@ func main() {
 					EnvVar: "ORIGINAL_OBJECT",
 				},
 				cli.StringFlag{
-					Name:   "output",
+					Name:   "output, O",
 					Usage:  "Output types available: formatted, raw",
 					Value:  "raw",
 					EnvVar: "DIFF_OUTPUT",
 				},
 				cli.StringFlag{
-					Name:   "skip-keys, s",
-					Usage:  "`ORIGINAL` to PATCH",
+					Name:   "path",
+					Usage:  "Preform diff on specific bath, given in jmespath",
+					Value:  "",
+					EnvVar: "DIFF_PATH",
+				},
+				cli.StringFlag{
+					Name:   "regex-skip, es",
+					Usage:  "regular expression of values to skip",
 					Value:  "",
 					EnvVar: "SKIP_KEYS",
 				},
@@ -130,7 +143,8 @@ func main() {
 					c.String("patch"),
 					c.String("original"),
 					c.String("output"),
-					c.String("skip-keys"),
+					c.String("regex-skip"),
+					c.String("path"),
 					os.Stdout,
 				)
 
